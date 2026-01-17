@@ -14,29 +14,38 @@ export async function searchUserByEmail(email: string) {
   try {
     console.log("[v0] Searching for user:", email)
 
-    const { data, error } = await supabaseAdmin.auth.admin.listUsers()
+    // Query the public.users table directly for instant results
+    // This bypasses the pagination issue and is much faster
+    const { data: userData, error: dbError } = await supabaseAdmin
+      .from("users")
+      .select("id, email, created_at")
+      .ilike("email", email)
+      .single()
 
-    if (error) {
-      console.error("[v0] Error listing users:", error)
-      return { success: false, error: "Failed to search users" }
+    if (dbError) {
+      console.error("[v0] Database query error:", dbError)
+      
+      // Check if it's a "not found" error
+      if (dbError.code === "PGRST116") {
+        return { success: false, error: "User not found" }
+      }
+      
+      return { success: false, error: "Failed to search user" }
     }
 
-    // Find user by email
-    const user = data.users.find((u) => u.email?.toLowerCase() === email.toLowerCase())
-
-    if (!user) {
+    if (!userData) {
       console.log("[v0] User not found")
       return { success: false, error: "User not found" }
     }
 
-    console.log("[v0] User found:", user.id, user.email)
+    console.log("[v0] User found:", userData.id, userData.email)
 
     return {
       success: true,
       user: {
-        id: user.id,
-        email: user.email || "",
-        created_at: user.created_at,
+        id: userData.id,
+        email: userData.email,
+        created_at: userData.created_at,
       },
     }
   } catch (error) {

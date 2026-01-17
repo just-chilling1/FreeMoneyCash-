@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { CheckCircle, Mail } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -16,6 +19,11 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [resetEmail, setResetEmail] = useState("")
+  const [resetSuccess, setResetSuccess] = useState(false)
+  const [resetError, setResetError] = useState<string | null>(null)
+  const [isResetting, setIsResetting] = useState(false)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
   const router = useRouter()
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -35,6 +43,39 @@ export default function LoginPage() {
       setError(error instanceof Error ? error.message : "An error occurred")
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const supabase = createClient()
+    setIsResetting(true)
+    setResetError(null)
+    setResetSuccess(false)
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      })
+      
+      if (error) throw error
+      
+      setResetSuccess(true)
+      setResetEmail("")
+    } catch (error: unknown) {
+      setResetError(error instanceof Error ? error.message : "Failed to send reset email")
+    } finally {
+      setIsResetting(false)
+    }
+  }
+
+  const handleDialogChange = (open: boolean) => {
+    setIsDialogOpen(open)
+    if (!open) {
+      // Reset form when dialog closes
+      setResetEmail("")
+      setResetSuccess(false)
+      setResetError(null)
     }
   }
 
@@ -70,9 +111,74 @@ export default function LoginPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-base">
-                  Password
-                </Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password" className="text-base">
+                    Password
+                  </Label>
+                  <Dialog open={isDialogOpen} onOpenChange={handleDialogChange}>
+                    <DialogTrigger asChild>
+                      <button
+                        type="button"
+                        className="text-sm text-primary hover:underline font-medium"
+                      >
+                        Forgot Password?
+                      </button>
+                    </DialogTrigger>
+                    <DialogContent className="glass-strong glow-cyan sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle className="text-2xl font-bold text-primary">Reset Your Password</DialogTitle>
+                        <DialogDescription className="text-base text-muted-foreground">
+                          Enter your email address and we'll send you a password reset link.
+                        </DialogDescription>
+                      </DialogHeader>
+                      {!resetSuccess ? (
+                        <form onSubmit={handleResetPassword} className="space-y-4 mt-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="reset-email" className="text-base">
+                              Email Address
+                            </Label>
+                            <Input
+                              id="reset-email"
+                              type="email"
+                              placeholder="your@email.com"
+                              required
+                              value={resetEmail}
+                              onChange={(e) => setResetEmail(e.target.value)}
+                              className="h-12 text-lg glass"
+                            />
+                          </div>
+                          {resetError && (
+                            <Alert variant="destructive">
+                              <AlertDescription>{resetError}</AlertDescription>
+                            </Alert>
+                          )}
+                          <Button
+                            type="submit"
+                            className="w-full h-12 text-base font-bold glow-cyan"
+                            disabled={isResetting}
+                          >
+                            {isResetting ? "Sending..." : "Send Reset Link"}
+                          </Button>
+                        </form>
+                      ) : (
+                        <Alert className="border-green-500/50 bg-green-500/10">
+                          <CheckCircle className="h-5 w-5 text-green-500" />
+                          <AlertDescription className="text-green-500 text-base ml-2">
+                            <p className="font-semibold mb-2">Password reset email sent!</p>
+                            <p className="text-sm">
+                              Please check your inbox for the password reset link. The email may take{" "}
+                              <strong>5-10 minutes</strong> to arrive.
+                            </p>
+                            <p className="text-sm mt-2">
+                              <Mail className="inline h-4 w-4 mr-1" />
+                              Don't forget to check your <strong>spam/junk folder</strong> if you don't see it in your inbox.
+                            </p>
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                    </DialogContent>
+                  </Dialog>
+                </div>
                 <Input
                   id="password"
                   type="password"
