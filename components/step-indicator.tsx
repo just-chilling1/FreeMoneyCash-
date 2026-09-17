@@ -1,4 +1,5 @@
 import { Check } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface StepIndicatorProps {
   currentStep: number
@@ -11,40 +12,50 @@ const steps = [
 
 export function StepIndicator({ currentStep }: StepIndicatorProps) {
   return (
-    <div className="glass-strong border-border/50 rounded-2xl p-6 lg:p-8">
-      <div className="flex items-center justify-between">
-        {steps.map((step, index) => (
-          <div key={step.number} className="flex items-center flex-1">
-            <div className="flex flex-col items-center gap-3 flex-1">
-              <div
-                className={`w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold transition-all duration-300 ${
-                  currentStep > step.number
-                    ? "bg-accent text-background glow-jade"
-                    : currentStep === step.number
-                      ? "bg-primary text-background glow-cyan"
-                      : "bg-muted text-muted-foreground"
-                }`}
-              >
-                {currentStep > step.number ? <Check className="w-8 h-8" /> : step.number}
-              </div>
-              <div className="text-center">
-                <p
-                  className={`text-lg font-bold ${currentStep >= step.number ? "text-foreground" : "text-muted-foreground"}`}
-                >
-                  {step.title}
-                </p>
-                <p className="text-sm text-muted-foreground">{step.description}</p>
-              </div>
-            </div>
-            {index < steps.length - 1 && (
-              <div className="flex-1 h-1 mx-4 rounded-full bg-muted overflow-hidden">
+    <div className="rounded-2xl border border-border/50 bg-card/60 px-4 py-4 sm:px-6 sm:py-5">
+      <div className="flex items-center">
+        {steps.map((step, index) => {
+          const isComplete = currentStep > step.number
+          const isActive = currentStep === step.number
+
+          return (
+            <div key={step.number} className="flex min-w-0 flex-1 items-center">
+              <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
                 <div
-                  className={`h-full transition-all duration-500 ${currentStep > step.number ? "bg-accent w-full" : "bg-transparent w-0"}`}
-                />
+                  className={cn(
+                    "flex h-11 w-11 items-center justify-center rounded-xl text-base font-bold transition-all duration-300 sm:h-12 sm:w-12 sm:text-lg",
+                    isComplete && "bg-primary text-primary-foreground",
+                    isActive && "bg-primary text-primary-foreground ring-2 ring-primary/35",
+                    !isComplete && !isActive && "bg-muted text-muted-foreground",
+                  )}
+                >
+                  {isComplete ? <Check className="h-5 w-5" /> : step.number}
+                </div>
+                <div className="text-center">
+                  <p
+                    className={cn(
+                      "text-sm font-bold sm:text-base",
+                      currentStep >= step.number ? "text-foreground" : "text-muted-foreground",
+                    )}
+                  >
+                    {step.title}
+                  </p>
+                  <p className="hidden text-xs text-muted-foreground sm:block">{step.description}</p>
+                </div>
               </div>
-            )}
-          </div>
-        ))}
+              {index < steps.length - 1 && (
+                <div className="mx-3 h-0.5 min-w-[2rem] flex-1 overflow-hidden rounded-full bg-muted sm:mx-4">
+                  <div
+                    className={cn(
+                      "h-full bg-primary transition-all duration-500",
+                      isComplete ? "w-full" : "w-0",
+                    )}
+                  />
+                </div>
+              )}
+            </div>
+          )
+        })}
       </div>
     </div>
   )

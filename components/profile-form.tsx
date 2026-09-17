@@ -1,41 +1,45 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-import { Loader2 } from "lucide-react"
+import { CheckCircle2, Loader2 } from "lucide-react"
 
 interface ProfileFormProps {
-  profile: any
+  profile: {
+    id: string
+    full_name?: string | null
+  } | null
   userEmail: string
 }
 
 export function ProfileForm({ profile, userEmail }: ProfileFormProps) {
   const [fullName, setFullName] = useState(profile?.full_name || "")
   const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState("")
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!profile?.id) return
+
     setLoading(true)
-    setMessage("")
+    setMessage(null)
 
     try {
       const supabase = createClient()
-      const { error } = await supabase.from("users").update({ full_name: fullName }).eq("id", profile.id)
+      const { error } = await supabase.from("users").update({ full_name: fullName.trim() }).eq("id", profile.id)
 
       if (error) throw error
 
-      setMessage("Profile updated successfully!")
+      setMessage({ type: "success", text: "Profile updated successfully." })
       router.refresh()
-    } catch (error) {
-      setMessage("Failed to update profile. Please try again.")
+    } catch {
+      setMessage({ type: "error", text: "Failed to update profile. Please try again." })
     } finally {
       setLoading(false)
     }
@@ -43,46 +47,53 @@ export function ProfileForm({ profile, userEmail }: ProfileFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-3">
-        <Label htmlFor="email" className="text-lg font-semibold">
-          Email Address
+      <div className="space-y-2">
+        <Label htmlFor="email" className="text-sm font-semibold text-muted-foreground">
+          Email address
         </Label>
-        <Input id="email" type="email" value={userEmail} disabled className="h-12 text-lg glass" />
-        <p className="text-sm text-muted-foreground">Email cannot be changed</p>
+        <Input id="email" type="email" value={userEmail} disabled className="h-12 glass opacity-80" />
+        <p className="text-xs text-muted-foreground">Email cannot be changed</p>
       </div>
 
-      <div className="space-y-3">
-        <Label htmlFor="fullName" className="text-lg font-semibold">
-          Full Name
+      <div className="space-y-2">
+        <Label htmlFor="fullName" className="text-sm font-semibold text-muted-foreground">
+          Full name
         </Label>
         <Input
           id="fullName"
           type="text"
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
-          className="h-12 text-lg glass"
+          className="h-12 glass"
           placeholder="Enter your full name"
         />
       </div>
 
-      {message && (
+      {message ? (
         <div
-          className={`p-4 rounded-xl ${message.includes("success") ? "bg-accent/10 border border-accent/30" : "bg-destructive/10 border border-destructive/30"}`}
+          className={`flex items-center gap-2 rounded-xl border p-4 text-sm font-semibold ${
+            message.type === "success"
+              ? "border-primary/30 bg-primary/10 text-primary"
+              : "border-destructive/30 bg-destructive/10 text-destructive"
+          }`}
         >
-          <p className={`text-base font-semibold ${message.includes("success") ? "text-accent" : "text-destructive"}`}>
-            {message}
-          </p>
+          {message.type === "success" ? <CheckCircle2 className="h-4 w-4 shrink-0" /> : null}
+          {message.text}
         </div>
-      )}
+      ) : null}
 
-      <Button type="submit" disabled={loading} className="h-14 text-lg font-bold glow-cyan">
+      <Button
+        type="submit"
+        disabled={loading || !profile?.id}
+        className="h-12 w-full bg-primary font-bold uppercase tracking-wide text-primary-foreground shadow-[0_8px_24px_rgba(207,161,59,0.3)] hover:bg-accent sm:w-auto sm:min-w-[200px]"
+      >
         {loading ? (
           <>
-            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Saving...
           </>
         ) : (
-          "Save Changes"
+          "Save changes"
         )}
       </Button>
     </form>

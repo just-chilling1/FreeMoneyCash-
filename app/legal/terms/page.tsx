@@ -25,7 +25,7 @@ export default function TermsOfServicePage() {
             <section className="space-y-4">
               <h2 className="text-2xl font-bold text-foreground">1. Acceptance of Terms</h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                By accessing and using P55 Account, you accept and agree to be bound by these Terms of Service. If you
+                By accessing and using Free Money Cash, you accept and agree to be bound by these Terms of Service. If you
                 do not agree to these terms, please do not use our services.
               </p>
             </section>
@@ -33,7 +33,7 @@ export default function TermsOfServicePage() {
             <section className="space-y-4">
               <h2 className="text-2xl font-bold text-foreground">2. Use of Service</h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                You agree to use P55 Account only for lawful purposes and in accordance with these Terms. You are
+                You agree to use Free Money Cash only for lawful purposes and in accordance with these Terms. You are
                 responsible for all content you create and share using our platform. You must not use our service to
                 create misleading, fraudulent, or illegal content.
               </p>
@@ -51,7 +51,7 @@ export default function TermsOfServicePage() {
             <section className="space-y-4">
               <h2 className="text-2xl font-bold text-foreground">4. Intellectual Property</h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                The content you create using P55 Account belongs to you. However, you grant us a license to use,
+                The content you create using Free Money Cash belongs to you. However, you grant us a license to use,
                 display, and distribute your content as necessary to provide our services. Our platform, including all
                 software and design elements, remains our property.
               </p>
@@ -68,7 +68,7 @@ export default function TermsOfServicePage() {
             <section className="space-y-4">
               <h2 className="text-2xl font-bold text-foreground">6. Limitation of Liability</h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                P55 Account is provided as-is without warranties of any kind. We are not liable for any damages arising
+                Free Money Cash is provided as-is without warranties of any kind. We are not liable for any damages arising
                 from your use of our service, including but not limited to lost profits, data loss, or business
                 interruption.
               </p>
@@ -78,7 +78,7 @@ export default function TermsOfServicePage() {
               <h2 className="text-2xl font-bold text-foreground">7. Changes to Terms</h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
                 We reserve the right to modify these Terms at any time. We will notify you of any changes by posting the
-                new Terms on this page. Your continued use of P55 Account after changes constitutes acceptance of the
+                new Terms on this page. Your continued use of Free Money Cash after changes constitutes acceptance of the
                 new Terms.
               </p>
             </section>

@@ -4,24 +4,27 @@ import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Play, X } from "lucide-react"
+import { INTRO_WATCHED_EVENT, INTRO_WATCHED_KEY } from "@/lib/dashboard-shared"
 
 interface VideoIntroModalProps {
   videoUrl?: string
   title?: string
   description?: string
+  showRewatchButton?: boolean
 }
 
 export function VideoIntroModal({
   videoUrl = "https://player.vimeo.com/video/1134294445?badge=0&autopause=0&player_id=0&app_id=58479",
-  title = "Welcome to P55 Account!",
+  title = "Welcome to Free Money Cash!",
   description = "Watch this quick 2-minute intro to learn how to create your first high-converting affiliate page.",
+  showRewatchButton = true,
 }: VideoIntroModalProps) {
   const [open, setOpen] = useState(false)
   const [hasWatched, setHasWatched] = useState(false)
 
   useEffect(() => {
     // Check if user has already watched the intro
-    const watched = localStorage.getItem("p55-intro-watched")
+    const watched = localStorage.getItem(INTRO_WATCHED_KEY)
     if (!watched) {
       // Show modal after a short delay for better UX
       const timer = setTimeout(() => {
@@ -35,7 +38,8 @@ export function VideoIntroModal({
 
   const handleClose = () => {
     setOpen(false)
-    localStorage.setItem("p55-intro-watched", "true")
+    localStorage.setItem(INTRO_WATCHED_KEY, "true")
+    window.dispatchEvent(new Event(INTRO_WATCHED_EVENT))
     setHasWatched(true)
   }
 
@@ -46,20 +50,32 @@ export function VideoIntroModal({
   return (
     <>
       {/* Rewatch button - shows after user has watched once */}
-      {hasWatched && (
+      {showRewatchButton && hasWatched ? (
         <Button
           onClick={() => setOpen(true)}
           variant="outline"
           size="lg"
-          className="fixed bottom-6 right-6 z-50 glass-strong border-primary/50 hover:border-primary hover:glow-cyan transition-all duration-300"
+          className="fixed right-4 bottom-24 z-50 glass-strong border-primary/50 transition-all duration-300 hover:border-primary hover:glow-purple lg:right-6 lg:bottom-6"
         >
           <Play className="w-5 h-5 mr-2" />
           Watch Intro Again
         </Button>
-      )}
+      ) : null}
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-4xl glass-strong border-primary/30 p-0 overflow-hidden">
+      <Dialog
+        open={open}
+        onOpenChange={(nextOpen) => {
+          if (nextOpen) {
+            setOpen(true)
+            return
+          }
+          handleClose()
+        }}
+      >
+        <DialogContent
+          showCloseButton={false}
+          className="max-w-4xl overflow-hidden border-primary/30 p-0 glass-strong"
+        >
           <DialogHeader className="p-6 pb-4">
             <div className="flex items-start justify-between">
               <div className="space-y-2">
@@ -81,7 +97,7 @@ export function VideoIntroModal({
           <div className="relative w-full aspect-video bg-black/50">
             <iframe
               src={videoUrl}
-              title="P55 Account Introduction"
+              title="Free Money Cash Introduction"
               allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
               allowFullScreen
               className="absolute inset-0 w-full h-full border-0"
@@ -101,7 +117,7 @@ export function VideoIntroModal({
             <Button
               size="lg"
               onClick={handleClose}
-              className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-background font-bold glow-cyan transition-all duration-300"
+              className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-background font-bold glow-purple transition-all duration-300"
             >
               Let's Get Started!
             </Button>

@@ -78,10 +78,10 @@ export default function ResetPasswordPage() {
   return (
     <div className="flex min-h-screen w-full items-center justify-center p-6">
       <div className="w-full max-w-md">
-        <Card className="glass-strong glow-cyan">
+        <Card className="glass-strong glow-purple">
           <CardHeader className="space-y-2">
             <div className="flex items-center justify-center mb-4">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center shadow-[0_0_40px_rgba(0,240,255,0.4)]">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center shadow-[0_0_40px_rgba(207,161,59,0.4)]">
                 <Lock className="h-8 w-8 text-background" />
               </div>
             </div>
@@ -145,7 +145,7 @@ export default function ResetPasswordPage() {
                 )}
                 <Button
                   type="submit"
-                  className="w-full h-14 text-lg font-bold glow-cyan"
+                  className="w-full h-14 text-lg font-bold glow-purple"
                   disabled={isLoading}
                 >
                   {isLoading ? "Resetting Password..." : "Reset Password"}

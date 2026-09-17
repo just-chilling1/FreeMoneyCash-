@@ -33,10 +33,10 @@ export default async function MyPagesPage() {
     <div className="space-y-8 max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-2">Your P55 Pages</h1>
+          <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-2">Your Pages</h1>
           <p className="text-xl text-muted-foreground">Manage and track your profit pages</p>
         </div>
-        <Button asChild className="h-14 text-lg font-bold glow-cyan" size="lg">
+        <Button asChild className="h-14 text-lg font-bold glow-purple" size="lg">
           <Link href="/create">Build New Page</Link>
         </Button>
       </div>
@@ -48,12 +48,12 @@ export default async function MyPagesPage() {
               <Eye className="w-12 h-12 text-muted-foreground" />
             </div>
             <div>
-              <h2 className="text-3xl font-bold text-foreground mb-3">No P55 Pages Yet</h2>
+              <h2 className="text-3xl font-bold text-foreground mb-3">No Pages Yet</h2>
               <p className="text-lg text-muted-foreground">
                 Create your first profit page and start earning commissions today
               </p>
             </div>
-            <Button asChild className="h-14 text-lg font-bold glow-cyan" size="lg">
+            <Button asChild className="h-14 text-lg font-bold glow-purple" size="lg">
               <Link href="/create">Build Your First Page</Link>
             </Button>
           </CardContent>
@@ -61,7 +61,7 @@ export default async function MyPagesPage() {
       ) : (
         <div className="space-y-6">
           {pages.map((page) => (
-            <Card key={page.id} className="glass border-border/50 hover:glow-cyan transition-all duration-300">
+            <Card key={page.id} className="glass border-border/50 hover:glow-purple transition-all duration-300">
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
@@ -113,7 +113,12 @@ export default async function MyPagesPage() {
                   </div>
                 </div>
 
-                <PageActions pageId={page.id} status={page.status} affiliateLink={page.affiliate_link} />
+                <PageActions
+                  pageId={page.id}
+                  pageTitle={page.title}
+                  status={page.status}
+                  affiliateLink={page.affiliate_link}
+                />
               </CardContent>
             </Card>
           ))}

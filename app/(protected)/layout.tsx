@@ -1,15 +1,23 @@
 import type React from "react"
 import { AppSidebar } from "@/components/app-sidebar"
 import { EarningsBanner } from "@/components/earnings-banner"
+import { AnimatedBackground } from "@/components/animated-background"
+import { BottomNav } from "@/components/bottom-nav"
+import { ContactSupportWidget } from "@/components/dashboard/contact-support-widget"
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen w-full bg-[#0A0E12]">
+    <div className="min-h-dvh">
+      <AnimatedBackground />
       <AppSidebar />
-      <main className="flex-1 ml-64 p-6 lg:p-8">
-        <EarningsBanner />
-        {children}
+      <main className="transition-[padding] duration-300 lg:pl-[var(--sidebar-w)]">
+        <div className="min-h-dvh bg-transparent p-4 pt-[calc(env(safe-area-inset-top)+3.5rem)] pb-24 lg:p-8 lg:pt-8 lg:pb-8">
+          <EarningsBanner />
+          {children}
+        </div>
       </main>
+      <BottomNav />
+      <ContactSupportWidget />
     </div>
   )
 }

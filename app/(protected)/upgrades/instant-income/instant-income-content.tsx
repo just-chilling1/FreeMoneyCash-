@@ -409,8 +409,8 @@ export function InstantIncomeContent({ userId }: { userId: string }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-950 via-slate-900 to-slate-950 p-4 md:p-8">
-      <Button asChild variant="ghost" className="text-violet-400 hover:text-violet-300 mb-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-slate-900 to-slate-950 p-4 md:p-8">
+      <Button asChild variant="ghost" className="text-secondary hover:text-accent mb-6">
         <Link href="/dashboard">
           <ArrowLeft className="w-5 h-5 mr-2" />
           Back to Dashboard
@@ -418,13 +418,13 @@ export function InstantIncomeContent({ userId }: { userId: string }) {
       </Button>
 
       <div className="max-w-5xl mx-auto space-y-8">
-        <div className="text-center space-y-6 bg-gradient-to-br from-violet-500/10 to-purple-500/10 rounded-2xl p-12 border border-violet-500/20">
-          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center mx-auto shadow-lg shadow-violet-500/50">
+        <div className="text-center space-y-6 bg-gradient-to-br from-secondary/10 to-primary/10 rounded-2xl p-12 border border-secondary/20">
+          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-secondary to-primary flex items-center justify-center mx-auto shadow-lg shadow-secondary/50">
             <Facebook className="w-12 h-12 text-white" />
           </div>
           <div>
             <h1 className="text-5xl lg:text-6xl font-black text-white mb-4">Instant Income: Facebook Posts</h1>
-            <p className="text-2xl text-violet-300 font-bold mb-4">200+ Ready-to-Post Messages for Facebook Groups</p>
+            <p className="text-2xl text-accent font-bold mb-4">200+ Ready-to-Post Messages for Facebook Groups</p>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed font-semibold">
               Copy these proven posts, paste them in Facebook groups, and start making money TODAY. No tech skills
               needed!
@@ -432,7 +432,7 @@ export function InstantIncomeContent({ userId }: { userId: string }) {
           </div>
         </div>
 
-        <Card className="glass-strong border-violet-500/30 glow-violet overflow-hidden shadow-2xl">
+        <Card highlighted className="glass-strong border-secondary/30 glow-violet overflow-hidden shadow-2xl">
           <CardContent className="p-0">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
               {/* Video Player */}
@@ -451,7 +451,7 @@ export function InstantIncomeContent({ userId }: { userId: string }) {
                     <Button
                       size="lg"
                       onClick={() => setIsVideoPlaying(true)}
-                      className="relative z-10 h-24 w-24 rounded-full bg-violet-500 hover:bg-violet-400 text-white shadow-2xl hover:scale-110 transition-all duration-300 border-4 border-white/20"
+                      className="relative z-10 h-24 w-24 rounded-full bg-secondary hover:bg-secondary text-white shadow-2xl hover:scale-110 transition-all duration-300 border-4 border-white/20"
                     >
                       <Play className="w-12 h-12 ml-1 fill-white" />
                     </Button>
@@ -473,10 +473,10 @@ export function InstantIncomeContent({ userId }: { userId: string }) {
               </div>
 
               {/* Video Info */}
-              <div className="p-8 flex flex-col justify-center space-y-4 bg-gradient-to-br from-violet-500/10 to-purple-500/10">
+              <div className="p-8 flex flex-col justify-center space-y-4 bg-gradient-to-br from-secondary/10 to-primary/10">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-6 h-6 text-violet-400" />
-                  <span className="text-violet-400 font-black text-sm uppercase tracking-wider">Watch First</span>
+                  <Sparkles className="w-6 h-6 text-secondary" />
+                  <span className="text-secondary font-black text-sm uppercase tracking-wider">Watch First</span>
                 </div>
                 <div>
                   <h2 className="text-3xl font-black text-white mb-3">How to Use Instant Income</h2>
@@ -490,17 +490,17 @@ export function InstantIncomeContent({ userId }: { userId: string }) {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-violet-900/30 to-purple-900/30 border-violet-500/30 shadow-xl">
+        <Card className="bg-gradient-to-br from-secondary/30 to-primary/30 border-secondary/30 shadow-xl">
           <CardHeader>
             <CardTitle className="text-3xl font-black text-white flex items-center gap-3">
-              <CheckCircle2 className="w-8 h-8 text-violet-400" />
+              <CheckCircle2 className="w-8 h-8 text-secondary" />
               How to Use This (3 Simple Steps)
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-violet-500/10 rounded-xl p-6 border border-violet-500/30">
-                <div className="w-16 h-16 rounded-full bg-violet-500 flex items-center justify-center mb-4 text-2xl font-black text-white">
+              <div className="bg-secondary/10 rounded-xl p-6 border border-secondary/30">
+                <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-4 text-2xl font-black text-white">
                   1
                 </div>
                 <h3 className="text-2xl font-black text-white mb-3">Pick Your Niche</h3>
@@ -510,8 +510,8 @@ export function InstantIncomeContent({ userId }: { userId: string }) {
                 </p>
               </div>
 
-              <div className="bg-purple-500/10 rounded-xl p-6 border border-purple-500/30">
-                <div className="w-16 h-16 rounded-full bg-purple-500 flex items-center justify-center mb-4 text-2xl font-black text-white">
+              <div className="bg-primary/10 rounded-xl p-6 border border-primary/30">
+                <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center mb-4 text-2xl font-black text-white">
                   2
                 </div>
                 <h3 className="text-2xl font-black text-white mb-3">Enter Your Link</h3>
@@ -520,8 +520,8 @@ export function InstantIncomeContent({ userId }: { userId: string }) {
                 </p>
               </div>
 
-              <div className="bg-fuchsia-500/10 rounded-xl p-6 border border-fuchsia-500/30">
-                <div className="w-16 h-16 rounded-full bg-fuchsia-500 flex items-center justify-center mb-4 text-2xl font-black text-white">
+              <div className="bg-primary/10 rounded-xl p-6 border border-primary/30">
+                <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center mb-4 text-2xl font-black text-white">
                   3
                 </div>
                 <h3 className="text-2xl font-black text-white mb-3">Copy & Post</h3>
@@ -595,31 +595,31 @@ export function InstantIncomeContent({ userId }: { userId: string }) {
                 </ul>
               </div>
 
-              <div className="bg-purple-500/10 rounded-xl p-6 border border-purple-500/30">
+              <div className="bg-primary/10 rounded-xl p-6 border border-primary/30">
                 <h4 className="text-2xl font-black text-white mb-4">Step 3: Post Your Message</h4>
                 <ul className="space-y-3 text-lg text-gray-300 font-semibold">
                   <li className="flex items-start gap-3">
-                    <span className="text-purple-400 font-black">•</span>
+                    <span className="text-primary font-black">•</span>
                     <span>
                       Click "Write something..." in the group. Paste your copied message. Click "Post". That's it!
                     </span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-purple-400 font-black">•</span>
+                    <span className="text-primary font-black">•</span>
                     <span>
                       Best times to post: 7-9 AM (before work), 12-1 PM (lunch break), 7-9 PM (after work). People are
                       most active then!
                     </span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-purple-400 font-black">•</span>
+                    <span className="text-primary font-black">•</span>
                     <span>
                       Post in 3-5 different groups per day. DON'T post in all groups at once or Facebook might think
                       you're spamming
                     </span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-purple-400 font-black">•</span>
+                    <span className="text-primary font-black">•</span>
                     <span>
                       When people comment, reply within 1 hour! Be friendly and helpful. This makes your post show up
                       more in the group
@@ -653,7 +653,7 @@ export function InstantIncomeContent({ userId }: { userId: string }) {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-violet-900/30 to-purple-900/30 border-violet-500/30 shadow-xl">
+        <Card className="bg-gradient-to-br from-secondary/30 to-primary/30 border-secondary/30 shadow-xl">
           <CardHeader>
             <CardTitle className="text-3xl font-black text-white">Get Your Posts Now</CardTitle>
           </CardHeader>
@@ -668,8 +668,8 @@ export function InstantIncomeContent({ userId }: { userId: string }) {
                     variant={selectedNiche === niche ? "default" : "outline"}
                     className={
                       selectedNiche === niche
-                        ? "bg-violet-500 hover:bg-violet-600 text-white font-bold text-lg py-6"
-                        : "border-violet-500/30 text-violet-300 hover:bg-violet-500/20 font-bold text-lg py-6"
+                        ? "bg-secondary hover:bg-secondary/90 text-white font-bold text-lg py-6"
+                        : "border-secondary/30 text-accent hover:bg-secondary/20 font-bold text-lg py-6"
                     }
                   >
                     {niche === "all" ? "All Niches" : niche}
@@ -736,7 +736,7 @@ export function InstantIncomeContent({ userId }: { userId: string }) {
                 placeholder="https://your-affiliate-link.com"
                 value={affiliateLink}
                 onChange={(e) => setAffiliateLink(e.target.value)}
-                className="bg-gray-800 border-violet-500/30 text-white text-xl font-semibold py-6"
+                className="bg-gray-800 border-secondary/30 text-white text-xl font-semibold py-6"
               />
               <p className="text-base text-gray-400 font-semibold">
                 We'll automatically add your link to all the posts below
@@ -746,7 +746,7 @@ export function InstantIncomeContent({ userId }: { userId: string }) {
             <Button
               onClick={handleGeneratePosts}
               disabled={!affiliateLink.trim()}
-              className="w-full bg-violet-500 hover:bg-violet-600 text-white font-black text-2xl py-8"
+              className="w-full bg-secondary hover:bg-secondary/90 text-white font-black text-2xl py-8"
               size="lg"
             >
               <CheckCircle2 className="w-8 h-8 mr-3" />
@@ -768,13 +768,13 @@ export function InstantIncomeContent({ userId }: { userId: string }) {
               {filteredPosts.map((post, index) => (
                 <Card
                   key={post.id}
-                  className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-violet-500/20 hover:border-violet-400/50 transition-all"
+                  className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-secondary/20 hover:border-secondary/50 transition-all"
                 >
                   <CardContent className="p-8">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-4">
-                          <span className="px-4 py-2 bg-violet-500/20 text-violet-300 text-base font-bold rounded-full">
+                          <span className="px-4 py-2 bg-secondary/20 text-accent text-base font-bold rounded-full">
                             Post #{index + 1}
                           </span>
                           <span className="px-4 py-2 bg-blue-500/20 text-blue-300 text-base font-bold rounded-full">
@@ -793,7 +793,7 @@ export function InstantIncomeContent({ userId }: { userId: string }) {
                     </div>
                     <Button
                       onClick={() => handleCopy(post)}
-                      className="w-full bg-violet-500 hover:bg-violet-600 text-white font-black text-xl py-6"
+                      className="w-full bg-secondary hover:bg-secondary/90 text-white font-black text-xl py-6"
                       size="lg"
                     >
                       {copiedId === post.id ? (

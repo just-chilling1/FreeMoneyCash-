@@ -7,7 +7,7 @@ export default function UnlockDFYVaultPage() {
       upgradeName="DFY Vault"
       upgradeValue="$47"
       features={[
-        "50+ Done-For-You P55 Pages",
+        "50+ Done-For-You Pages",
         "Pre-written content in 10 niches",
         "Instant deployment templates",
         "Compliance-checked copy",

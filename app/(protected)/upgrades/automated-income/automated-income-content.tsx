@@ -2040,7 +2040,7 @@ export function AutomatedIncomeContent({ userId }: { userId: string }) {
         </div>
       </div>
 
-      <Card className="glass-strong border-emerald-500/30 glow-jade overflow-hidden shadow-2xl">
+      <Card highlighted className="glass-strong border-emerald-500/30 glow-purple overflow-hidden shadow-2xl">
         <CardContent className="p-0">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
             {/* Video Player */}

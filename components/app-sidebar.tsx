@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import {
   Home,
@@ -13,114 +13,228 @@ import {
   TrendingUp,
   Sparkles,
   Rocket,
-} from "lucide-react"
-import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
+  PanelLeftClose,
+  PanelLeftOpen,
+  Headphones,
+} from 'lucide-react'
+import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
 
 const menuItems = [
-  { title: "Dashboard", url: "/dashboard", icon: Home },
-  { title: "Build P55 Page", url: "/create", icon: Zap },
-  { title: "Your P55 Pages", url: "/pages", icon: FileText },
-  { title: "Share & Promote", url: "/share", icon: Share2 },
-  { title: "Instant Cash Injection", url: "/instant-cash", icon: DollarSign },
-  { title: "New System to Earn $1,000-$5,000 Per Day", url: "/bonus-training", icon: TrendingUp },
-  { title: "P55 Training", url: "/training", icon: GraduationCap },
-  { title: "Settings", url: "/settings", icon: Settings },
+  { title: 'Dashboard', url: '/dashboard', icon: Home },
+  { title: 'Build Page', url: '/create', icon: Zap },
+  { title: 'Your Pages', url: '/pages', icon: FileText },
+  { title: 'Share & Promote', url: '/share', icon: Share2 },
+  { title: 'Instant Cash Injection', url: '/instant-cash', icon: DollarSign },
+  { title: 'New System to Earn $1,000-$5,000 Per Day', url: '/bonus-training', icon: TrendingUp },
+  { title: 'Training', url: '/training', icon: GraduationCap },
+  { title: 'Settings', url: '/settings', icon: Settings },
 ]
 
 const premiumItems = [
-  { title: "DFY Vault", url: "/upgrades/dfy-vault", icon: Crown },
-  { title: "Instant Income", url: "/upgrades/instant-income", icon: Sparkles },
-  { title: "Automated Income", url: "/upgrades/automated-income", icon: Rocket },
+  { title: 'DFY Vault', url: '/upgrades/dfy-vault', icon: Crown },
+  { title: 'Instant Income', url: '/upgrades/instant-income', icon: Sparkles },
+  { title: 'Automated Income', url: '/upgrades/automated-income', icon: Rocket },
 ]
+
+const COLLAPSE_KEY = 'fmc_sidebar_collapsed'
 
 export function AppSidebar() {
   const pathname = usePathname()
   const router = useRouter()
+  const [collapsed, setCollapsed] = useState(false)
+
+  useEffect(() => {
+    const saved = localStorage.getItem(COLLAPSE_KEY) === '1'
+    setCollapsed(saved)
+    document.documentElement.dataset.sidebar = saved ? 'collapsed' : 'expanded'
+  }, [])
+
+  const toggleCollapsed = () => {
+    setCollapsed((prev) => {
+      const next = !prev
+      localStorage.setItem(COLLAPSE_KEY, next ? '1' : '0')
+      document.documentElement.dataset.sidebar = next ? 'collapsed' : 'expanded'
+      return next
+    })
+  }
 
   const handleSignOut = async () => {
     const supabase = createClient()
     await supabase.auth.signOut()
-    router.push("/auth/login")
+    router.push('/auth/login')
   }
 
-  return (
-    <aside className="fixed left-0 top-0 h-screen w-64 border-r border-white/10 bg-[#0A0E12] flex flex-col z-50">
-      {/* Header */}
-      <div className="p-6 border-b border-white/10">
-        <Link href="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#00f0ff] via-[#7a5cff] to-[#1ce5a1] flex items-center justify-center shadow-[0_0_40px_rgba(0,240,255,0.4)]">
-            <span className="text-2xl font-bold text-[#0A0E12]">P</span>
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-white">P55 Account</h2>
-            <p className="text-sm text-[#00f0ff]">Your Profit System</p>
-          </div>
-        </Link>
-      </div>
+  const navLinkClass = (isActive: boolean) =>
+    `cyber-sidebar-item flex items-center gap-3 rounded-lg py-3 text-sm font-medium transition-all duration-300 ${
+      collapsed ? 'justify-center px-0' : 'px-4'
+    } ${isActive ? 'active bg-primary/5 text-primary' : 'text-zinc-400 hover:text-primary/80'}`
 
-      {/* Menu */}
-      <div className="flex-1 py-6 overflow-y-auto">
-        <p className="text-base font-semibold text-[#00f0ff]/70 px-4 mb-2">Menu</p>
-        <nav className="space-y-1 px-2">
-          {menuItems.map((item) => {
-            const isActive = pathname === item.url
-            const Icon = item.icon
-            return (
-              <Link
-                key={item.title}
-                href={item.url}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-lg font-medium transition-colors duration-150 ${
-                  isActive ? "bg-[#00f0ff]/20 text-[#00f0ff]" : "text-white hover:bg-[#00f0ff]/10 hover:text-[#00f0ff]"
-                }`}
-              >
-                <Icon className="w-6 h-6 flex-shrink-0" />
-                <span>{item.title}</span>
-              </Link>
-            )
-          })}
-        </nav>
-
-        {/* Premium Features */}
-        <div className="mt-6">
-          <p className="text-base font-semibold text-[#FFD700] px-4 mb-2 flex items-center gap-2">
-            <Sparkles className="w-4 h-4" />
-            Premium Features
-          </p>
-          <nav className="space-y-1 px-2">
-            {premiumItems.map((item) => {
-              const isActive = pathname === item.url
-              const Icon = item.icon
-              return (
-                <Link
-                  key={item.title}
-                  href={item.url}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-lg font-medium transition-all duration-150 border-2 ${
-                    isActive
-                      ? "bg-gradient-to-r from-[#FFD700]/20 to-[#FFA500]/20 border-[#FFD700] text-[#FFD700]"
-                      : "border-[#FFD700]/30 text-white hover:border-[#FFD700] hover:bg-[#FFD700]/10 hover:text-[#FFD700]"
-                  }`}
-                >
-                  <Icon className="w-6 h-6 flex-shrink-0" />
-                  <span>{item.title}</span>
-                </Link>
-              )
-            })}
-          </nav>
+  const sidebarContent = (
+    <div className="flex h-full flex-col">
+      <div className={`border-b border-white/5 ${collapsed ? 'px-3 py-5' : 'p-6'}`}>
+        <div className={`flex items-center ${collapsed ? 'flex-col gap-3' : 'gap-3'}`}>
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent shadow-[0_0_24px_rgba(207,161,59,0.4)]">
+            <span className="text-lg font-black italic text-primary-foreground">F</span>
+          </div>
+          {!collapsed && (
+            <Link href="/dashboard" className="min-w-0 flex-1 hover:opacity-90">
+              <h1 className="whitespace-nowrap text-lg font-black italic uppercase tracking-tighter text-white">
+                FREE&nbsp;MONEY
+              </h1>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/50">
+                CASH
+              </p>
+            </Link>
+          )}
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-white/5 hover:text-primary"
+          >
+            {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+          </button>
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-white/10">
+      <nav className={`flex-1 overflow-y-auto ${collapsed ? 'px-2 py-4' : 'p-4'}`}>
+        {!collapsed && (
+          <p className="mb-2 px-4 text-[10px] uppercase tracking-widest text-zinc-500">Navigation</p>
+        )}
+        <ul className="space-y-1">
+          {menuItems.map((item, index) => {
+            const isActive = pathname === item.url
+            const Icon = item.icon
+            return (
+              <motion.li
+                key={item.url}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.04 }}
+              >
+                <Link
+                  href={item.url}
+                  title={collapsed ? item.title : undefined}
+                  className={navLinkClass(isActive)}
+                >
+                  <Icon size={18} strokeWidth={1.5} className="shrink-0" />
+                  {!collapsed && <span className="tracking-wide">{item.title}</span>}
+                  {!collapsed && isActive && (
+                    <motion.div
+                      layoutId="activeIndicator"
+                      className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
+                      style={{ boxShadow: '0 0 10px rgba(207, 161, 59, 0.5)' }}
+                    />
+                  )}
+                </Link>
+              </motion.li>
+            )
+          })}
+        </ul>
+
+        <div className={`${collapsed ? 'mt-6 border-t border-white/5 pt-4' : 'mt-8'}`}>
+          <div className={`premium-nav-section ${collapsed ? 'p-1' : 'p-2'}`}>
+            {!collapsed && (
+              <p className="flex items-center gap-1.5 px-2.5 pt-1.5 pb-2 text-[10px] font-bold uppercase tracking-widest text-primary">
+                <Sparkles className="h-3 w-3 animate-pulse-glow" fill="currentColor" />
+                Premium Features
+              </p>
+            )}
+            <ul className="space-y-1">
+              {premiumItems.map((item, index) => {
+                const isActive = pathname === item.url
+                const Icon = item.icon
+                return (
+                  <motion.li
+                    key={item.url}
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.15 + index * 0.05 }}
+                  >
+                    <Link
+                      href={item.url}
+                      title={collapsed ? item.title : undefined}
+                      className={`premium-sidebar-item flex items-center gap-3 rounded-xl py-3 text-sm font-medium transition-all duration-300 ${
+                        collapsed ? 'justify-center px-0' : 'px-3'
+                      } ${isActive ? 'is-active' : ''}`}
+                    >
+                      <Icon
+                        size={18}
+                        strokeWidth={1.5}
+                        className={isActive ? 'text-primary' : 'text-primary/80'}
+                      />
+                      {!collapsed && <span className="tracking-wide">{item.title}</span>}
+                      {!collapsed && isActive && (
+                        <motion.div
+                          layoutId="activePremiumIndicator"
+                          className="ml-auto h-1.5 w-1.5 rounded-full bg-primary"
+                          style={{ boxShadow: '0 0 10px rgba(207, 161, 59, 0.7)' }}
+                        />
+                      )}
+                    </Link>
+                  </motion.li>
+                )
+              })}
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      <div className={collapsed ? 'px-2 pt-4 pb-2' : 'px-4 pt-4 pb-4'}>
+        <Link
+          href="/support"
+          title={collapsed ? 'Support' : undefined}
+          className={`flex items-center gap-2 rounded-lg border border-white/5 bg-primary/5 py-3 transition-colors hover:border-primary/20 hover:bg-primary/10 ${
+            collapsed ? 'justify-center px-0' : 'px-4'
+          }`}
+        >
+          <Headphones size={collapsed ? 18 : 14} strokeWidth={1.5} className="shrink-0 text-primary" />
+          {!collapsed && (
+            <span className="text-xs uppercase tracking-wider text-zinc-400">Support</span>
+          )}
+        </Link>
+      </div>
+
+      <div className={collapsed ? 'p-2' : 'px-4 pb-4'}>
         <button
           onClick={handleSignOut}
-          className="w-full h-14 text-lg font-medium text-white bg-transparent border border-white/20 rounded-lg hover:border-[#00f0ff]/50 hover:text-[#00f0ff] hover:bg-[#00f0ff]/5 transition-all duration-200 flex items-center justify-center gap-2"
+          title={collapsed ? 'Sign Out' : undefined}
+          className={`flex w-full items-center gap-3 rounded-lg py-3 text-sm font-medium text-zinc-500 transition-all duration-300 hover:bg-red-400/5 hover:text-red-400 ${
+            collapsed ? 'justify-center px-0' : 'px-4'
+          }`}
         >
-          <LogOut className="w-5 h-5" />
-          Sign Out
+          <LogOut size={18} strokeWidth={1.5} />
+          {!collapsed && <span className="tracking-wide">Sign Out</span>}
         </button>
       </div>
-    </aside>
+    </div>
+  )
+
+  return (
+    <>
+      <div
+        className="fixed top-0 right-0 left-0 z-40 flex h-14 items-center gap-3 border-b border-white/5 bg-background/90 px-4 backdrop-blur lg:hidden"
+        style={{ paddingTop: 'env(safe-area-inset-top)' }}
+      >
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent">
+          <span className="text-sm font-black italic text-primary-foreground">F</span>
+        </div>
+        <span className="whitespace-nowrap text-sm font-black italic uppercase tracking-tighter text-white">
+          Free&nbsp;Money&nbsp;Cash
+        </span>
+      </div>
+
+      <aside
+        className="cyber-sidebar fixed top-0 left-0 z-40 hidden h-full transition-[width] duration-300 lg:block"
+        style={{ width: 'var(--sidebar-w)' }}
+      >
+        {sidebarContent}
+      </aside>
+    </>
   )
 }

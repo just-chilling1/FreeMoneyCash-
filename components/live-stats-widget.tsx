@@ -1,19 +1,22 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { TrendingUp, FileText, DollarSign, MousePointerClick, Users, CheckCircle2 } from "lucide-react"
+import { TrendingUp, CheckCircle2 } from "lucide-react"
+import type { DashboardStory } from "@/lib/dashboard-shared"
+import { cn } from "@/lib/utils"
 
-const SUCCESS_STORIES = [
-  { name: "Sarah M.", amount: 247, action: "earned from her P55 page" },
+const FALLBACK_STORIES: DashboardStory[] = [
+  { name: "Sarah M.", amount: 247, action: "earned from her page" },
   { name: "Mike T.", amount: 1834, action: "generated this week" },
+  { name: "Jessica R.", amount: 89, action: "earned completing surveys" },
+  { name: "Emily W.", amount: 2156, action: "earned this month" },
 ]
 
 function getDailyBaseValues() {
   const today = new Date().toDateString()
   const seed = today.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0)
 
-  // Use seed to generate consistent random values for the day
   const seededRandom = (min: number, max: number, offset: number) => {
     const x = Math.sin(seed + offset) * 10000
     return Math.floor(min + (x - Math.floor(x)) * (max - min + 1))
@@ -33,28 +36,29 @@ function getDailyBaseValues() {
   }
 }
 
-function getInitialStats() {
-  if (typeof window === "undefined") return getDailyBaseValues()
+function getStoredStats() {
+  if (typeof window === "undefined") return null
 
-  const stored = localStorage.getItem("p55-live-stats")
+  const stored = localStorage.getItem("fmc-live-stats")
   const today = new Date().toDateString()
 
   if (stored) {
-    const parsed = JSON.parse(stored)
-    // Check if it's the same day
-    if (parsed.date === today) {
-      return parsed.stats
+    try {
+      const parsed = JSON.parse(stored)
+      if (parsed.date === today) {
+        return parsed.stats
+      }
+    } catch {
+      // ignore bad cache
     }
   }
 
-  // New day or no stored data - get fresh base values
-  const baseValues = getDailyBaseValues()
-  localStorage.setItem("p55-live-stats", JSON.stringify({ date: today, stats: baseValues }))
-  return baseValues
+  return null
 }
 
-export function LiveStatsWidget() {
-  const [stats, setStats] = useState(getInitialStats())
+export function LiveStatsWidget({ stories = [] }: { stories?: DashboardStory[] }) {
+  const [stats, setStats] = useState(getDailyBaseValues)
+  const [mounted, setMounted] = useState(false)
   const [flickerStates, setFlickerStates] = useState({
     articles: false,
     fastCash: false,
@@ -62,33 +66,47 @@ export function LiveStatsWidget() {
     members: false,
     money: false,
   })
-  const [currentStory, setCurrentStory] = useState<{ name: string; amount: number; action: string } | null>(null)
+  const [currentStory, setCurrentStory] = useState<DashboardStory | null>(null)
   const [isStoryVisible, setIsStoryVisible] = useState(false)
+  const rotatingStories = useMemo(() => {
+    const merged = [...stories.filter((story) => story.name), ...FALLBACK_STORIES]
+    return merged.slice(0, 8)
+  }, [stories])
 
   useEffect(() => {
-    console.log("[v0] LiveStatsWidget mounted, starting increment interval")
+    setMounted(true)
+    const stored = getStoredStats()
+    if (stored) {
+      setStats(stored)
+    } else {
+      const baseValues = getDailyBaseValues()
+      localStorage.setItem(
+        "fmc-live-stats",
+        JSON.stringify({ date: new Date().toDateString(), stats: baseValues }),
+      )
+      setStats(baseValues)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return
 
     const incrementStats = () => {
-      console.log("[v0] Incrementing stats...")
       setStats((prev) => {
         const newStats = {
-          articlesPublished: prev.articlesPublished + Math.floor(Math.random() * 3) + 1, // +1 to +3
-          avgFastCash: Number.parseFloat((prev.avgFastCash + Math.random() * 0.05).toFixed(2)), // +0 to +0.05
-          affiliateClicks: prev.affiliateClicks + Math.floor(Math.random() * 15) + 5, // +5 to +20
-          activeMembers: prev.activeMembers + Math.floor(Math.random() * 2), // +0 to +1
-          totalMoney: prev.totalMoney + Math.floor(Math.random() * 50) + 20, // +20 to +70
+          articlesPublished: prev.articlesPublished + Math.floor(Math.random() * 3) + 1,
+          avgFastCash: Number.parseFloat((prev.avgFastCash + Math.random() * 0.05).toFixed(2)),
+          affiliateClicks: prev.affiliateClicks + Math.floor(Math.random() * 15) + 5,
+          activeMembers: prev.activeMembers + Math.floor(Math.random() * 2),
+          totalMoney: prev.totalMoney + Math.floor(Math.random() * 50) + 20,
         }
 
-        console.log("[v0] New stats:", newStats)
-
-        // Save to localStorage
         const today = new Date().toDateString()
-        localStorage.setItem("p55-live-stats", JSON.stringify({ date: today, stats: newStats }))
+        localStorage.setItem("fmc-live-stats", JSON.stringify({ date: today, stats: newStats }))
 
         return newStats
       })
 
-      // Trigger random flicker effect
       const keys = Object.keys(flickerStates) as Array<keyof typeof flickerStates>
       const randomKey = keys[Math.floor(Math.random() * keys.length)]
       setFlickerStates((prev) => ({ ...prev, [randomKey]: true }))
@@ -97,20 +115,15 @@ export function LiveStatsWidget() {
       }, 300)
     }
 
-    // Run increment every 5 seconds consistently
     const interval = setInterval(incrementStats, 5000)
-
-    console.log("[v0] Interval set with ID:", interval)
-
-    return () => {
-      console.log("[v0] Cleaning up interval:", interval)
-      clearInterval(interval)
-    }
-  }, []) // Empty dependency array is correct - we only want this to run once
+    return () => clearInterval(interval)
+  }, [mounted]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
+    if (!mounted) return
+
     const showRandomStory = () => {
-      const randomStory = SUCCESS_STORIES[Math.floor(Math.random() * SUCCESS_STORIES.length)]
+      const randomStory = rotatingStories[Math.floor(Math.random() * rotatingStories.length)]
       setCurrentStory(randomStory)
       setIsStoryVisible(true)
 
@@ -131,103 +144,102 @@ export function LiveStatsWidget() {
       clearTimeout(initialStoryTimeout)
       clearInterval(storyInterval)
     }
-  }, [])
+  }, [mounted, rotatingStories])
+
+  const formatNumber = (value: number) => value.toLocaleString("en-US")
+
+  const metricRows = [
+    { key: "articles" as const, label: "Articles Today", value: formatNumber(stats.articlesPublished) },
+    { key: "fastCash" as const, label: "Avg Fast Cash", value: String(stats.avgFastCash) },
+    { key: "clicks" as const, label: "Clicks Tracked", value: formatNumber(stats.affiliateClicks) },
+    { key: "members" as const, label: "Active This Week", value: formatNumber(stats.activeMembers) },
+  ]
 
   return (
-    <Card className="glass-strong border-2 border-cyan-500/30 shadow-xl overflow-hidden relative scale-90 origin-top">
-      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-emerald-500/5 to-amber-500/5" />
+    <div className="sticky top-4 z-20 space-y-6 lg:top-8">
+      <Card className="glass-strong relative gap-0 overflow-hidden border-2 border-primary/30 py-0 shadow-xl [&>div]:gap-3">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5" />
 
-      <CardHeader className="relative z-10 pb-3 text-center">
-        <CardTitle className="text-3xl font-bold text-white flex items-center justify-center gap-2">
-          <span className="text-3xl">💵</span>
-          <span>What's Happening Inside P55 Right Now</span>
-        </CardTitle>
-        <p className="text-sm text-gray-300 mt-1 font-medium">
-          Members are generating real results every single day through their P55 Accounts.
-        </p>
-      </CardHeader>
+        <CardHeader className="relative z-10 space-y-1 px-4 pb-2 pt-4 text-center">
+          <CardTitle className="text-lg font-bold text-white sm:text-xl">What&apos;s happening right now</CardTitle>
+          <p className="text-xs font-medium leading-snug text-muted-foreground sm:text-sm">
+            Members are generating results every day through Free Money Cash.
+          </p>
+        </CardHeader>
 
-      <CardContent className="space-y-4 relative z-10">
-        <div className="grid grid-cols-2 gap-3">
-          <div
-            className={`p-3 rounded-lg bg-gradient-to-br from-cyan-500/10 to-cyan-500/5 border border-cyan-500/30 transition-all duration-300 text-center ${flickerStates.articles ? "scale-105 border-cyan-400/50 shadow-lg shadow-cyan-500/20" : ""}`}
-          >
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <FileText className="w-4 h-4 text-cyan-400" />
-              <p className="text-xs font-semibold text-gray-300">Articles Today</p>
-            </div>
-            <p className="text-2xl font-bold text-cyan-400">{stats.articlesPublished.toLocaleString()}</p>
+        <CardContent className="relative z-10 space-y-3 px-4 pb-4">
+          <div className="flex flex-col gap-2">
+            {metricRows.map((row) => (
+              <div
+                key={row.key}
+                className={cn(
+                  "flex items-center justify-between gap-3 rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 to-primary/5 px-3.5 py-2 transition-all duration-300",
+                  flickerStates[row.key] && "border-primary/60 shadow-lg shadow-primary/20",
+                )}
+              >
+                <p className="text-sm font-medium text-muted-foreground">{row.label}</p>
+                <p className="text-2xl font-black tabular-nums tracking-tight text-primary">{row.value}</p>
+              </div>
+            ))}
           </div>
 
-          <div
-            className={`p-3 rounded-lg bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/30 transition-all duration-300 text-center ${flickerStates.fastCash ? "scale-105 border-emerald-400/50 shadow-lg shadow-emerald-500/20" : ""}`}
-          >
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <DollarSign className="w-4 h-4 text-emerald-400" />
-              <p className="text-xs font-semibold text-gray-300">Avg Fast Cash</p>
-            </div>
-            <p className="text-2xl font-bold text-emerald-400">{stats.avgFastCash}</p>
-          </div>
-
-          <div
-            className={`p-3 rounded-lg bg-gradient-to-br from-violet-500/10 to-violet-500/5 border border-violet-500/30 transition-all duration-300 text-center ${flickerStates.clicks ? "scale-105 border-violet-400/50 shadow-lg shadow-violet-500/20" : ""}`}
-          >
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <MousePointerClick className="w-4 h-4 text-violet-400" />
-              <p className="text-xs font-semibold text-gray-300">Clicks Tracked</p>
-            </div>
-            <p className="text-2xl font-bold text-violet-400">{stats.affiliateClicks.toLocaleString()}</p>
-          </div>
-
-          <div
-            className={`p-3 rounded-lg bg-gradient-to-br from-amber-500/10 to-amber-500/5 border border-amber-500/30 transition-all duration-300 text-center ${flickerStates.members ? "scale-105 border-amber-400/50 shadow-lg shadow-amber-500/20" : ""}`}
-          >
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <Users className="w-4 h-4 text-amber-400" />
-              <p className="text-xs font-semibold text-gray-300">Active This Week</p>
-            </div>
-            <p className="text-2xl font-bold text-amber-400">{stats.activeMembers.toLocaleString()}</p>
-          </div>
-        </div>
-
-        <div
-          className={`p-4 rounded-xl bg-gradient-to-r from-emerald-500/20 via-amber-500/20 to-emerald-500/20 border-2 border-emerald-400/50 shadow-xl shadow-emerald-500/20 transition-all duration-300 text-center ${flickerStates.money ? "scale-[1.02] border-emerald-300/70 shadow-emerald-500/40" : ""}`}
-        >
-          <p className="text-xs font-bold text-gray-200 mb-2 uppercase tracking-wide">Total Money Generated Today</p>
-          <div className="flex items-center justify-center gap-2">
-            <p className="text-3xl font-black text-emerald-400">${stats.totalMoney.toLocaleString()}</p>
-            <TrendingUp className="w-6 h-6 text-emerald-400" />
-          </div>
-        </div>
-
-        <div className="min-h-[80px] flex items-center justify-center">
-          {isStoryVisible && currentStory ? (
-            <div className="w-full animate-in slide-in-from-bottom-3 fade-in duration-500">
-              <div className="bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 p-[2px] rounded-lg">
-                <div className="bg-background/95 rounded-lg p-3 flex items-start gap-3">
-                  <div className="flex-shrink-0 mt-0.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  </div>
-                  <div className="flex-1 text-center">
-                    <p className="text-xs font-bold text-foreground mb-1">
-                      {currentStory.name} just {currentStory.action}!
-                    </p>
-                    <div className="flex items-center justify-center gap-1">
-                      <DollarSign className="w-3 h-3 text-emerald-400" />
-                      <p className="text-sm font-black text-emerald-400">${currentStory.amount.toLocaleString()}</p>
+          <div className="flex min-h-[2.5rem] items-center justify-center">
+            {isStoryVisible && currentStory ? (
+              <div className="w-full animate-in slide-in-from-bottom-3 fade-in duration-500">
+                <div className="rounded-lg bg-gradient-to-r from-emerald-500/20 to-primary/20 p-[2px]">
+                  <div className="flex items-start gap-3 rounded-lg bg-background/95 p-2.5">
+                    <div className="mt-0.5 flex-shrink-0">
+                      <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                    </div>
+                    <div className="flex-1 text-center">
+                      <p className="mb-0.5 line-clamp-2 text-xs font-bold text-foreground">
+                        {currentStory.name} just {currentStory.action}!
+                      </p>
+                      <p className="text-sm font-black text-emerald-400">${formatNumber(currentStory.amount)}</p>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            <div className="flex items-center justify-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-lg shadow-emerald-500/50" />
-              <p className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Live</p>
-            </div>
-          )}
+            ) : (
+              <div className="flex items-center justify-center gap-2">
+                <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-400 shadow-lg shadow-emerald-500/50" />
+                <p className="text-xs font-bold uppercase tracking-wider text-emerald-400">Live</p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <div
+        className={cn(
+          "relative overflow-hidden rounded-2xl border-2 border-emerald-400/60 bg-gradient-to-br from-emerald-500/25 via-card to-primary/15 p-5 shadow-[0_0_40px_rgba(52,211,153,0.28)] backdrop-blur-md transition-all duration-300",
+          flickerStates.money && "scale-[1.02] border-emerald-300 shadow-[0_0_52px_rgba(52,211,153,0.45)]",
+        )}
+      >
+        <div className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-emerald-400/20 blur-2xl" />
+        <div className="pointer-events-none absolute -bottom-10 -left-6 h-24 w-24 rounded-full bg-primary/20 blur-2xl" />
+
+        <div className="relative z-10 space-y-3 text-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+            </span>
+            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-emerald-300">
+              Total Money Generated Today
+            </p>
+          </div>
+
+          <div className="flex items-center justify-center gap-2.5">
+            <p className="text-4xl font-black tabular-nums tracking-tight text-emerald-300 sm:text-[2.75rem]">
+              ${formatNumber(stats.totalMoney)}
+            </p>
+            <TrendingUp className="h-7 w-7 shrink-0 text-emerald-400" />
+          </div>
+
+          <p className="text-xs font-medium text-muted-foreground">Updating live across Free Money Cash</p>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

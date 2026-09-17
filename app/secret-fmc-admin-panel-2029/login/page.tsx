@@ -10,8 +10,8 @@ import { Shield, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function AdminLoginPage() {
-  const [email] = useState("admin@p55app.com")
-  const [password] = useState("p55@@admin29")
+  const [email] = useState("admin@freemoneycash.com")
+  const [password] = useState("fmc@@admin29")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -22,10 +22,10 @@ export default function AdminLoginPage() {
     setLoading(true)
 
     // Hardcoded credentials check
-    if (email === "admin@p55app.com" && password === "p55@@admin29") {
+    if (email === "admin@freemoneycash.com" && password === "fmc@@admin29") {
       // Set admin session in localStorage
-      localStorage.setItem("p55_admin_authenticated", "true")
-      router.push("/secret-p55-admin-panel-2029/dashboard")
+      localStorage.setItem("fmc_admin_authenticated", "true")
+      router.push("/secret-fmc-admin-panel-2029/dashboard")
     } else {
       setError("Invalid admin credentials")
     }

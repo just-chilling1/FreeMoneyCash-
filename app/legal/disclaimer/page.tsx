@@ -68,7 +68,7 @@ export default function DisclaimerPage() {
             <section className="space-y-4">
               <h2 className="text-2xl font-bold text-foreground">Affiliate Disclosure</h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                P55 Account is designed to help you create affiliate marketing content. When you use our platform to
+                Free Money Cash is designed to help you create affiliate marketing content. When you use our platform to
                 promote products, you must comply with all FTC guidelines regarding affiliate disclosures. You are
                 responsible for including proper disclaimers on all pages you create.
               </p>
@@ -77,7 +77,7 @@ export default function DisclaimerPage() {
             <section className="space-y-4">
               <h2 className="text-2xl font-bold text-foreground">Typical Results</h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                The typical user of P55 Account may not earn any income. Success in affiliate marketing requires
+                The typical user of Free Money Cash may not earn any income. Success in affiliate marketing requires
                 consistent effort, traffic generation, and ongoing optimization. The income examples shown in our
                 marketing materials represent the top performers and are not typical results.
               </p>

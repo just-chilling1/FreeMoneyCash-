@@ -70,7 +70,7 @@ export default function PrivacyPolicyPage() {
             <section className="space-y-4">
               <h2 className="text-2xl font-bold text-foreground">6. Contact Us</h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                If you have any questions about this Privacy Policy, please contact us at privacy@p55account.com
+                If you have any questions about this Privacy Policy, please contact us at privacy@freemoneycash.com
               </p>
             </section>
           </CardContent>

@@ -631,7 +631,7 @@ export function DFYVaultContent() {
         setSelectedArticle(null)
         setAffiliateLink("")
         // Show success and redirect
-        alert("Success! Your page has been created and is now live in 'My P55 Pages'!")
+        alert("Success! Your page has been created and is now live in 'My Pages'!")
         router.push("/pages")
       } else {
         alert("Error creating page: " + result.error)
@@ -645,20 +645,20 @@ export function DFYVaultContent() {
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-12">
-      <Button asChild variant="ghost" className="text-cyan-400 hover:text-cyan-300 font-extrabold text-lg">
+      <Button asChild variant="ghost" className="text-primary hover:text-primary font-extrabold text-lg">
         <Link href="/dashboard">
           <ArrowLeft className="w-5 h-5 mr-2" />
           Back to Dashboard
         </Link>
       </Button>
 
-      <div className="text-center space-y-6 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-2xl p-12 border border-cyan-500/20">
-        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center mx-auto shadow-lg shadow-cyan-500/50">
+      <div className="text-center space-y-6 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl p-12 border border-primary/20">
+        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center mx-auto shadow-lg shadow-primary/50">
           <Crown className="w-12 h-12 text-white" />
         </div>
         <div>
           <h1 className="text-5xl lg:text-6xl font-black text-white mb-4">Welcome to Your DFY Vault!</h1>
-          <p className="text-2xl text-cyan-300 font-black mb-4">50 Proven Articles Ready to Copy & Earn</p>
+          <p className="text-2xl text-primary font-black mb-4">50 Proven Articles Ready to Copy & Earn</p>
           <p className="text-xl text-gray-100 max-w-3xl mx-auto leading-relaxed font-bold">
             These articles have generated over $500,000 in commissions for our members. Just copy any article, add your
             affiliate link where indicated, and start earning today.
@@ -666,7 +666,7 @@ export function DFYVaultContent() {
         </div>
       </div>
 
-      <Card className="glass-strong border-cyan-500/30 glow-cyan overflow-hidden shadow-2xl">
+      <Card highlighted className="glass-strong border-primary/30 glow-purple overflow-hidden shadow-2xl">
         <CardContent className="p-0">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
             <div className="relative aspect-video bg-black">
@@ -684,7 +684,7 @@ export function DFYVaultContent() {
                   <Button
                     size="lg"
                     onClick={() => setIsVideoPlaying(true)}
-                    className="relative z-10 h-24 w-24 rounded-full bg-cyan-500 hover:bg-cyan-400 text-white shadow-2xl hover:scale-110 transition-all duration-300 border-4 border-white/20"
+                    className="relative z-10 h-24 w-24 rounded-full bg-primary hover:bg-primary text-white shadow-2xl hover:scale-110 transition-all duration-300 border-4 border-white/20"
                   >
                     <Play className="w-12 h-12 ml-1 fill-white" />
                   </Button>
@@ -705,10 +705,10 @@ export function DFYVaultContent() {
               )}
             </div>
 
-            <div className="p-8 flex flex-col justify-center space-y-4 bg-gradient-to-br from-cyan-500/10 to-blue-500/10">
+            <div className="p-8 flex flex-col justify-center space-y-4 bg-gradient-to-br from-primary/10 to-secondary/10">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-6 h-6 text-cyan-400" />
-                <span className="text-cyan-400 font-black text-sm uppercase tracking-wider">Quick Start</span>
+                <Sparkles className="w-6 h-6 text-primary" />
+                <span className="text-primary font-black text-sm uppercase tracking-wider">Quick Start</span>
               </div>
               <div>
                 <h2 className="text-3xl font-black text-white mb-3">How to Use Your DFY Vault</h2>
@@ -724,7 +724,7 @@ export function DFYVaultContent() {
 
       <div className="space-y-6">
         {/* First Exclusive Training Video */}
-        <Card className="glass-strong border-yellow-500/50 glow-yellow overflow-hidden shadow-2xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20">
+        <Card highlighted className="glass-strong border-yellow-500/50 glow-yellow overflow-hidden shadow-2xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20">
           <CardContent className="p-0">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
               <div className="relative aspect-video bg-black">
@@ -783,7 +783,7 @@ export function DFYVaultContent() {
         </Card>
 
         {/* Second Exclusive Training Video */}
-        <Card className="glass-strong border-yellow-500/50 glow-yellow overflow-hidden shadow-2xl bg-gradient-to-br from-orange-500/20 to-red-500/20">
+        <Card highlighted className="glass-strong border-yellow-500/50 glow-yellow overflow-hidden shadow-2xl bg-gradient-to-br from-orange-500/20 to-red-500/20">
           <CardContent className="p-0">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
               <div className="relative aspect-video bg-black">
@@ -842,10 +842,10 @@ export function DFYVaultContent() {
         </Card>
       </div>
 
-      <Card className="bg-gray-900/50 border-cyan-500/20 shadow-xl">
+      <Card className="bg-gray-900/50 border-primary/20 shadow-xl">
         <CardHeader>
           <CardTitle className="text-4xl text-white flex items-center gap-3 font-black">
-            <FileText className="w-10 h-10 text-cyan-400" />
+            <FileText className="w-10 h-10 text-primary" />
             50 Proven Money-Making Articles
           </CardTitle>
           <p className="text-xl text-gray-100 mt-3 font-bold">
@@ -857,11 +857,11 @@ export function DFYVaultContent() {
             {allArticles.map((article) => (
               <Card
                 key={article.id}
-                className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-cyan-500/20 hover:border-cyan-400/50 transition-all hover:shadow-lg hover:shadow-cyan-500/20"
+                className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-primary/20 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/20"
               >
                 <CardContent className="p-6 space-y-4">
                   <div className="flex items-start justify-between gap-4">
-                    <Badge className="bg-cyan-500/20 text-cyan-300 text-sm font-black border-cyan-500/30">
+                    <Badge className="bg-primary/20 text-primary text-sm font-black border-primary/30">
                       {article.niche}
                     </Badge>
                     <div className="flex items-center gap-2">
@@ -874,7 +874,7 @@ export function DFYVaultContent() {
                   <p className="text-emerald-400 text-sm font-bold">
                     On average, this article makes ${article.earnings}/day
                   </p>
-                  <div className="bg-blue-500/10 rounded-lg p-3 border border-blue-500/20">
+                  <div className="bg-secondary/10 rounded-lg p-3 border border-secondary/20">
                     <p className="text-blue-300 text-sm font-bold flex items-start gap-2">
                       <Sparkles className="w-4 h-4 mt-0.5 flex-shrink-0" />
                       <span>
@@ -884,7 +884,7 @@ export function DFYVaultContent() {
                   </div>
                   <Button
                     onClick={() => handleUseArticle(article)}
-                    className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-black text-lg"
+                    className="w-full bg-primary hover:bg-primary/90 text-white font-black text-lg"
                     size="lg"
                   >
                     Use This Article
@@ -897,18 +897,18 @@ export function DFYVaultContent() {
       </Card>
 
       <Dialog open={showLinkModal} onOpenChange={setShowLinkModal}>
-        <DialogContent className="bg-gray-900 border-cyan-500/30 max-w-2xl">
+        <DialogContent className="bg-gray-900 border-primary/30 max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-3xl font-black text-white">Enter Your Affiliate Link</DialogTitle>
             <DialogDescription className="text-xl text-gray-300 font-bold mt-4">
-              We'll automatically create a page with this article and your affiliate link. It will appear in "My P55
+              We'll automatically create a page with this article and your affiliate link. It will appear in "My
               Pages" ready to share!
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-6 mt-6">
             {selectedArticle && (
-              <div className="bg-cyan-500/10 rounded-lg p-4 border border-cyan-500/20">
-                <p className="text-cyan-300 font-bold text-lg mb-2">Article: {selectedArticle.title}</p>
+              <div className="bg-primary/10 rounded-lg p-4 border border-primary/20">
+                <p className="text-primary font-bold text-lg mb-2">Article: {selectedArticle.title}</p>
                 <p className="text-blue-300 text-sm font-bold flex items-start gap-2">
                   <Sparkles className="w-4 h-4 mt-0.5 flex-shrink-0" />
                   <span>
@@ -918,7 +918,7 @@ export function DFYVaultContent() {
               </div>
             )}
 
-            <div className="bg-blue-500/10 rounded-xl p-5 border-2 border-blue-500/30 space-y-3">
+            <div className="bg-secondary/10 rounded-xl p-5 border-2 border-secondary/30 space-y-3">
               <h3 className="text-lg font-bold text-blue-300 flex items-center gap-2">
                 <Sparkles className="w-5 h-5" />
                 Where to Get Your Affiliate Link
@@ -958,7 +958,7 @@ export function DFYVaultContent() {
                 asChild
                 variant="outline"
                 size="sm"
-                className="w-full border-blue-500/50 text-blue-300 hover:bg-blue-500/20 font-bold text-xs bg-transparent"
+                className="w-full border-secondary/50 text-blue-300 hover:bg-secondary/20 font-bold text-xs bg-transparent"
               >
                 <a href="http://digistore24.com" target="_blank" rel="noopener noreferrer">
                   Get Free DigiStore24 Account →
@@ -976,7 +976,7 @@ export function DFYVaultContent() {
                 placeholder="https://example.com/your-affiliate-link"
                 value={affiliateLink}
                 onChange={(e) => setAffiliateLink(e.target.value)}
-                className="bg-gray-800 border-cyan-500/30 text-white text-lg font-semibold h-14"
+                className="bg-gray-800 border-primary/30 text-white text-lg font-semibold h-14"
               />
               <p className="text-gray-400 text-sm font-semibold">
                 Paste the affiliate link for the product you want to promote with this article
@@ -993,7 +993,7 @@ export function DFYVaultContent() {
               </Button>
               <Button
                 onClick={handleCreatePage}
-                className="flex-1 bg-cyan-500 hover:bg-cyan-600 text-white font-black text-lg h-14"
+                className="flex-1 bg-primary hover:bg-primary/90 text-white font-black text-lg h-14"
                 disabled={!affiliateLink.trim() || isCreating}
               >
                 {isCreating ? "Creating Your Page..." : "Create My Page"}
@@ -1003,15 +1003,15 @@ export function DFYVaultContent() {
         </DialogContent>
       </Dialog>
 
-      <Card className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border-cyan-500/30 shadow-xl">
+      <Card className="bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/30 shadow-xl">
         <CardContent className="p-10 text-center space-y-6">
           <h3 className="text-4xl font-black text-white">Need Help? We're Here for You!</h3>
           <p className="text-2xl text-gray-100 max-w-2xl mx-auto leading-relaxed font-bold">
             Questions about using these articles? Not sure how to get an affiliate link? Visit our support portal
             anytime and we'll help you get started.
           </p>
-          <Button asChild className="bg-cyan-500 hover:bg-cyan-600 text-white font-black text-xl px-16 py-6" size="lg">
-            <a href="https://p55account.zendesk.com/" target="_blank" rel="noopener noreferrer">
+          <Button asChild className="bg-primary hover:bg-primary/90 text-white font-black text-xl px-16 py-6" size="lg">
+            <a href="mailto:support@freemoneycash.com" target="_blank" rel="noopener noreferrer">
               Contact Support
             </a>
           </Button>

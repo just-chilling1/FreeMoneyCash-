@@ -5,7 +5,7 @@ export default function VerifyEmailPage() {
   return (
     <div className="flex min-h-screen w-full items-center justify-center p-6">
       <div className="w-full max-w-md">
-        <Card className="glass-strong glow-jade">
+        <Card className="glass-strong glow-purple">
           <CardHeader className="space-y-2 text-center">
             <div className="mx-auto w-16 h-16 rounded-full bg-accent/20 flex items-center justify-center mb-4">
               <svg className="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">

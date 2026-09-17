@@ -47,16 +47,16 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center p-6">
-      <div className="w-full max-w-md">
-        <Card className="glass-strong glow-violet">
+    <div className="relative flex min-h-screen w-full items-center justify-center p-6">
+      <div className="relative z-10 w-full max-w-md">
+        <Card className="glass-strong glow-purple">
           <CardHeader className="space-y-2">
-            <div className="flex items-center justify-center mb-4">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center shadow-[0_0_40px_rgba(0,240,255,0.4)]">
-                <span className="text-3xl font-bold text-background">P</span>
+            <div className="mb-4 flex items-center justify-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-accent shadow-[0_0_40px_rgba(207,161,59,0.4)]">
+                <span className="text-3xl font-black italic text-primary-foreground">F</span>
               </div>
             </div>
-            <CardTitle className="text-3xl font-bold text-primary text-center">Join P55 Account</CardTitle>
+            <CardTitle className="text-center text-3xl font-bold text-primary">Join Free Money Cash</CardTitle>
             <CardDescription className="text-lg text-muted-foreground text-center">
               Start generating affiliate pages in minutes
             </CardDescription>

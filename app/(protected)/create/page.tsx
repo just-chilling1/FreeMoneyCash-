@@ -20,15 +20,20 @@ export default function CreatePage() {
   }
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
-      <div className="space-y-4">
-        <h1 className="text-4xl lg:text-5xl font-bold text-foreground">Build Your P55 Profit Page</h1>
-        <p className="text-xl text-muted-foreground">Follow 2 simple steps to create your money-making page</p>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-8">
+      <section className="space-y-2">
+        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">Create</p>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+          Build Your Profit Page
+        </h1>
+        <p className="max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+          Two steps: pick a niche, paste your affiliate link, and AI builds your page.
+        </p>
+      </section>
 
       <StepIndicator currentStep={currentStep} />
 
-      <div className="min-h-[600px]">
+      <div className="min-h-[28rem]">
         {currentStep === 1 && <NicheSelector onSelect={handleNicheSelect} />}
         {currentStep === 2 && selectedNiche && <PageGenerator nicheId={selectedNiche} onBack={handleBack} />}
       </div>

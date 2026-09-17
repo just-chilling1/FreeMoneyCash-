@@ -2,16 +2,26 @@ import * as React from 'react'
 
 import { cn } from '@/lib/utils'
 
-function Card({ className, ...props }: React.ComponentProps<'div'>) {
+function Card({
+  className,
+  children,
+  highlighted = false,
+  ...props
+}: React.ComponentProps<'div'> & { highlighted?: boolean }) {
   return (
     <div
       data-slot="card"
       className={cn(
-        'bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm',
+        'glass-card text-card-foreground relative flex flex-col gap-6 rounded-2xl py-6',
         className,
       )}
       {...props}
-    />
+    >
+      {highlighted ? (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit] scan-line" />
+      ) : null}
+      <div className="relative z-10 flex w-full flex-col gap-6">{children}</div>
+    </div>
   )
 }
 
@@ -32,7 +42,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="card-title"
-      className={cn('leading-none font-semibold', className)}
+      className={cn('leading-none font-semibold text-card-foreground', className)}
       {...props}
     />
   )

@@ -11,7 +11,7 @@ const upgrades = [
     name: "DFY Vault",
     tagline: "Done-For-You Templates",
     icon: Crown,
-    color: "cyan",
+    color: "purple",
     features: [
       "50+ Pre-Written Page Templates",
       "Swipe File of Top Performers",
@@ -78,7 +78,7 @@ export default async function UpgradesPage() {
       </div>
 
       {profile?.upgrade_level !== "free" && (
-        <Card className="glass-strong glow-jade border-border/50">
+        <Card highlighted className="glass-strong glow-purple border-border/50">
           <CardContent className="p-6 text-center">
             <p className="text-lg font-bold text-accent">
               Current Plan:{" "}
@@ -96,13 +96,12 @@ export default async function UpgradesPage() {
         {upgrades.map((upgrade) => {
           const Icon = upgrade.icon
           const isCurrentPlan = profile?.upgrade_level === upgrade.id
-          const glowClass =
-            upgrade.color === "cyan" ? "glow-cyan" : upgrade.color === "violet" ? "glow-violet" : "glow-jade"
+          const glowClass = upgrade.color === "violet" ? "glow-violet" : "glow-purple"
 
           return (
-            <Card key={upgrade.id} className={`glass-strong border-border/50 ${glowClass} flex flex-col`}>
+            <Card highlighted key={upgrade.id} className={`glass-strong border-border/50 ${glowClass} flex flex-col`}>
               <CardHeader className="text-center pb-6">
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center mx-auto mb-4 glow-cyan">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center mx-auto mb-4 glow-purple">
                   <Icon className="w-10 h-10 text-background" />
                 </div>
                 <CardTitle className="text-3xl font-bold text-foreground mb-2">{upgrade.name}</CardTitle>

@@ -45,8 +45,11 @@ export function SharePageDialog({ pageUrl, pageTitle }: SharePageDialogProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" className="h-12 px-6 glass bg-transparent">
-          <Share2 className="w-5 h-5 mr-2" />
+        <Button
+          variant="outline"
+          className="h-12 bg-transparent px-6 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/50 hover:bg-primary/10 hover:text-primary hover:shadow-[0_0_20px_rgba(207,161,59,0.18)]"
+        >
+          <Share2 className="mr-2 h-5 w-5" />
           Share
         </Button>
       </DialogTrigger>
@@ -120,7 +123,7 @@ export function SharePageDialog({ pageUrl, pageTitle }: SharePageDialogProps) {
             <p className="text-sm font-semibold text-muted-foreground">Or copy link</p>
             <div className="flex gap-2">
               <div className="flex-1 px-4 py-3 rounded-xl glass text-base text-foreground truncate">{pageUrl}</div>
-              <Button onClick={handleCopyLink} className="h-auto px-6 glow-cyan">
+              <Button onClick={handleCopyLink} className="h-auto px-6 glow-purple">
                 {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
               </Button>
             </div>

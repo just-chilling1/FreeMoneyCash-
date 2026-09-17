@@ -34,9 +34,9 @@ export default function AdminDashboardPage() {
     if (!mounted) return
 
     // Check if admin is authenticated
-    const isAuthenticated = localStorage.getItem("p55_admin_authenticated")
+    const isAuthenticated = localStorage.getItem("fmc_admin_authenticated")
     if (!isAuthenticated) {
-      router.push("/secret-p55-admin-panel-2029/login")
+      router.push("/secret-fmc-admin-panel-2029/login")
     }
   }, [router, mounted])
 
@@ -88,8 +88,8 @@ export default function AdminDashboardPage() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem("p55_admin_authenticated")
-    router.push("/secret-p55-admin-panel-2029/login")
+    localStorage.removeItem("fmc_admin_authenticated")
+    router.push("/secret-fmc-admin-panel-2029/login")
   }
 
   const formatDate = (dateString: string) => {
@@ -116,7 +116,7 @@ export default function AdminDashboardPage() {
               <Shield className="h-6 w-6 text-red-500" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">P55 Admin Panel</h1>
+              <h1 className="text-2xl font-bold text-white">Free Money Cash Admin</h1>
               <p className="text-sm text-slate-400">User Management System</p>
             </div>
           </div>

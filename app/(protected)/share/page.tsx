@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import SharePageClient from "./SharePageClient"
 
 export const metadata: Metadata = {
-  title: "Share Tools | P55 Account",
+  title: "Share Tools | Free Money Cash",
   description: "Share your affiliate pages across social media and track performance",
 }
 

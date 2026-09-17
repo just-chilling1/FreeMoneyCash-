@@ -80,17 +80,17 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center p-6">
-      <div className="w-full max-w-md">
-        <Card className="glass-strong glow-cyan">
+    <div className="relative flex min-h-screen w-full items-center justify-center p-6">
+      <div className="relative z-10 w-full max-w-md">
+        <Card className="glass-strong glow-purple">
           <CardHeader className="space-y-2">
-            <div className="flex items-center justify-center mb-4">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center shadow-[0_0_40px_rgba(0,240,255,0.4)]">
-                <span className="text-3xl font-bold text-background">P</span>
+            <div className="mb-4 flex items-center justify-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-accent shadow-[0_0_40px_rgba(207,161,59,0.4)]">
+                <span className="text-3xl font-black italic text-primary-foreground">F</span>
               </div>
             </div>
-            <CardTitle className="text-3xl font-bold text-primary text-center">Welcome to P55 Account</CardTitle>
-            <CardDescription className="text-lg text-muted-foreground text-center">
+            <CardTitle className="text-center text-3xl font-bold text-primary">Welcome to Free Money Cash</CardTitle>
+            <CardDescription className="text-center text-lg text-muted-foreground">
               Sign in to access your affiliate page builder
             </CardDescription>
           </CardHeader>
@@ -124,7 +124,7 @@ export default function LoginPage() {
                         Forgot Password?
                       </button>
                     </DialogTrigger>
-                    <DialogContent className="glass-strong glow-cyan sm:max-w-md">
+                    <DialogContent className="glass-strong glow-purple sm:max-w-md">
                       <DialogHeader>
                         <DialogTitle className="text-2xl font-bold text-primary">Reset Your Password</DialogTitle>
                         <DialogDescription className="text-base text-muted-foreground">
@@ -154,7 +154,7 @@ export default function LoginPage() {
                           )}
                           <Button
                             type="submit"
-                            className="w-full h-12 text-base font-bold glow-cyan"
+                            className="w-full h-12 text-base font-bold glow-purple"
                             disabled={isResetting}
                           >
                             {isResetting ? "Sending..." : "Send Reset Link"}
@@ -193,7 +193,7 @@ export default function LoginPage() {
                   <p className="text-sm text-destructive">{error}</p>
                 </div>
               )}
-              <Button type="submit" className="w-full h-14 text-lg font-bold glow-cyan" disabled={isLoading}>
+              <Button type="submit" className="w-full h-14 text-lg font-bold glow-purple" disabled={isLoading}>
                 {isLoading ? "Signing In..." : "Sign In"}
               </Button>
               <div className="text-center">
