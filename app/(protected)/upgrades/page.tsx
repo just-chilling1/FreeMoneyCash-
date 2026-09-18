@@ -2,18 +2,33 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Check, Crown, Zap, Rocket } from "lucide-react"
+import { BookOpen, Check, Crown, FileText, Package, Rocket, ShieldCheck, Zap } from "lucide-react"
 import Link from "next/link"
 
 const upgrades = [
   {
+    id: "dfy_profit",
+    name: "Done-For-You Profit",
+    tagline: "One link, one complete promo kit",
+    icon: Package,
+    color: "gold",
+    features: [
+      "5 YouTube Shorts to comment on",
+      "Ready-to-copy comments for each video",
+      "Hosted authority article with your link",
+      "3 Facebook posts promoting the article",
+      "Save, restore, and mark items as used",
+    ],
+    href: "/upgrades/dfy-profit",
+  },
+  {
     id: "dfy_vault",
-    name: "DFY Vault",
-    tagline: "Done-For-You Templates",
+    name: "Unlimited",
+    tagline: "200 ready-to-publish pages",
     icon: Crown,
     color: "purple",
     features: [
-      "50+ Pre-Written Page Templates",
+      "200 Pre-Written Page Templates",
       "Swipe File of Top Performers",
       "Advanced SEO Training",
       "Priority Email Support",
@@ -29,7 +44,7 @@ const upgrades = [
     icon: Zap,
     color: "violet",
     features: [
-      "Everything in DFY Vault",
+      "Everything in Unlimited",
       "Paid Traffic Training",
       "FB Ads Masterclass",
       "Landing Page Builder",
@@ -53,6 +68,52 @@ const upgrades = [
       "Lifetime Updates & Support",
     ],
     href: "/upgrades/automated-income",
+  },
+  {
+    id: "high_ticket_payouts",
+    name: "Guaranteed High-Ticket Payouts",
+    tagline: "Authority Articles That Convert",
+    icon: BookOpen,
+    color: "gold",
+    features: [
+      "100 Long-Form Authority Articles",
+      "9 High-Ticket Niches",
+      "Affiliate Link Woven Into Every CTA",
+      "Preview, Copy Text, or Copy HTML",
+      "Medium, LinkedIn, Quora, and Blog Guide",
+      "Mark Articles as Used Per Offer",
+    ],
+    href: "/upgrades/high-ticket-payouts",
+  },
+  {
+    id: "license_rights",
+    name: "Reseller & License Rights",
+    tagline: "Resell under your brand",
+    icon: FileText,
+    color: "gold",
+    features: [
+      "Reseller license",
+      "Rebrandable assets",
+      "Sales pages",
+      "Support docs",
+      "Team activation via License Rights ticket",
+    ],
+    href: "/upgrades/license-rights",
+  },
+  {
+    id: "protector",
+    name: "Cyber Protection",
+    tagline: "Account Security Overview",
+    icon: ShieldCheck,
+    color: "violet",
+    features: [
+      "Real-time security monitoring",
+      "Encryption & session status",
+      "Account verification dashboard",
+      "Server & tool health checks",
+      "Recent activity timeline",
+    ],
+    href: "/upgrades/protector",
   },
 ]
 
@@ -83,7 +144,7 @@ export default async function UpgradesPage() {
             <p className="text-lg font-bold text-accent">
               Current Plan:{" "}
               {profile?.upgrade_level === "dfy_vault"
-                ? "DFY Vault"
+                ? "Unlimited"
                 : profile?.upgrade_level === "instant_income"
                   ? "Instant Income"
                   : "Automated Income"}
@@ -92,7 +153,7 @@ export default async function UpgradesPage() {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {upgrades.map((upgrade) => {
           const Icon = upgrade.icon
           const isCurrentPlan = profile?.upgrade_level === upgrade.id

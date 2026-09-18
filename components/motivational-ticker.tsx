@@ -7,7 +7,7 @@ const messages = [
   "Mike T. generated his 5th page today!",
   "Jennifer L. reached $1,000 in total earnings!",
   "David R. got 47 clicks on his latest page!",
-  "Lisa K. just upgraded to DFY Vault!",
+  "Lisa K. just upgraded to Unlimited!",
   "Tom B. made his first sale in 24 hours!",
 ]
 

@@ -1,4 +1,4 @@
-export const SUPPORT_EMAIL = "support@freemoneycash.com"
+export const SUPPORT_EMAIL = "FreeMoneySystem@neoai.freshdesk.com"
 
 export const supportRoutes = {
   home: "/support",

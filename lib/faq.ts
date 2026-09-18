@@ -69,8 +69,12 @@ export const faqSections: FaqSection[] = [
     title: "Premium Features",
     items: [
       {
-        q: "What is DFY Vault?",
-        a: "Done-for-you content vault with ready materials you can use to promote offers faster without starting from scratch every time.",
+        q: "What is Done-For-You Profit?",
+        a: "Done-For-You Profit builds a complete promo kit from one link and one niche in a single run: videos to comment on, a hosted authority article, and Facebook posts.",
+      },
+      {
+        q: "What is Unlimited?",
+        a: "A library of 200 done-for-you pages. Preview any page, then publish it with your affiliate link.",
       },
       {
         q: "What is Instant Income?",
@@ -79,6 +83,18 @@ export const faqSections: FaqSection[] = [
       {
         q: "What is Automated Income?",
         a: "A curated traffic-source checklist and playbooks by niche — follow each source’s steps, plug in your page link, and track what you complete.",
+      },
+      {
+        q: "What is Guaranteed High-Ticket Payouts?",
+        a: "A library of 100 ready-to-publish authority articles. Paste your affiliate link, preview it woven into the CTA, then copy plain text or HTML for Medium, LinkedIn, Quora, or your blog.",
+      },
+      {
+        q: "What is Reseller & License Rights?",
+        a: "A request form for the Full Turnkey Reseller & License Rights Edition. Submit a License Rights ticket and the team activates the reseller edition on your account. Assets stay locked until then.",
+      },
+      {
+        q: "What is Cyber Protection?",
+        a: "Cyber Protection is your account security overview — verification status, security checks, and recent activity — so you can keep your member account in good standing. It is not a third-party antivirus product.",
       },
     ],
   },

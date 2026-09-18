@@ -1,5 +1,8 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
+import { sanitizeArticleHtml } from "@/lib/sanitize-html"
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 interface PageProps {
   params: Promise<{
@@ -7,21 +10,30 @@ interface PageProps {
   }>
 }
 
-async function getArticle(pageId: string) {
+async function fetchPages(filter: string) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/pages?${filter}&select=*,niches(name)`,
+    {
+      headers: {
+        apikey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`,
+      },
+      cache: "no-store",
+    },
+  )
+  const data = await response.json()
+  return Array.isArray(data) && data.length > 0 ? data[0] : null
+}
+
+async function getArticle(slugOrId: string) {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/pages?id=eq.${pageId}&select=*,niches(name)`,
-      {
-        headers: {
-          'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY!,
-          'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`,
-        },
-        cache: 'no-store'
-      }
-    )
-    
-    const data = await response.json()
-    return data && data.length > 0 ? data[0] : null
+    const encoded = encodeURIComponent(slugOrId)
+    const bySlug = await fetchPages(`slug=eq.${encoded}`)
+    if (bySlug) return bySlug
+    if (UUID_RE.test(slugOrId)) {
+      return await fetchPages(`id=eq.${encoded}`)
+    }
+    return null
   } catch (error) {
     console.error("Error fetching article:", error)
     return null
@@ -94,7 +106,7 @@ export default async function ArticlePage({ params }: PageProps) {
         
         .cta-btn-bottom:hover {
           transform: translateY(-3px) scale(1.02);
-          box-shadow: 0 20px 70px rgba(59, 130, 246, 0.6);
+          box-shadow: 0 20px 70px rgba(207, 161, 59, 0.6);
         }
         
         article h2 {
@@ -129,14 +141,14 @@ export default async function ArticlePage({ params }: PageProps) {
         }
         
         article a {
-          color: #60a5fa; text-decoration: none; font-weight: 600;
-          border-bottom: 2px solid rgba(96, 165, 250, 0.3);
+          color: #efbe76; text-decoration: none; font-weight: 600;
+          border-bottom: 2px solid rgba(207, 161, 59, 0.45);
           transition: all 0.2s ease; padding-bottom: 2px;
         }
         
         article a:hover {
-          color: #93c5fd;
-          border-bottom-color: rgba(147, 197, 253, 0.5);
+          color: #d9c8a6;
+          border-bottom-color: rgba(217, 200, 166, 0.7);
         }
         
         article ul, article ol {
@@ -192,7 +204,7 @@ export default async function ArticlePage({ params }: PageProps) {
 
       {/* Hero Section */}
       <div className="hero" style={{
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%)',
+        background: 'transparent',
         padding: '100px 24px 80px',
         position: 'relative',
         overflow: 'hidden'
@@ -232,7 +244,7 @@ export default async function ArticlePage({ params }: PageProps) {
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
             border: '1px solid rgba(116, 118, 55, 0.3)',
-            color: '#c7d2fe',
+            color: '#efbe76',
             fontSize: '0.75rem',
             fontWeight: 700,
             letterSpacing: '0.1em',
@@ -250,7 +262,7 @@ export default async function ArticlePage({ params }: PageProps) {
           <h1 style={{
             fontSize: '4rem',
             fontWeight: 900,
-            background: 'linear-gradient(135deg, #ffffff 0%, #c7d2fe 50%, #a78bfa 100%)',
+            background: 'linear-gradient(135deg, #ffffff 0%, #efbe76 55%, #cfa13b 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
@@ -282,7 +294,7 @@ export default async function ArticlePage({ params }: PageProps) {
               display: 'flex', 
               alignItems: 'center', 
               gap: '8px',
-              color: '#6ee7b7'
+              color: '#efbe76'
             }}>
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M15 5L7 13L3 9"/>
@@ -305,7 +317,7 @@ export default async function ArticlePage({ params }: PageProps) {
         zIndex: 2
       }}>
         <article style={{
-          background: 'rgba(15, 23, 42, 0.8)',
+          background: 'rgba(16, 16, 20, 0.94)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           borderRadius: '28px',
@@ -313,7 +325,7 @@ export default async function ArticlePage({ params }: PageProps) {
           boxShadow: '0 30px 120px -20px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(116, 118, 55, 0.1)',
           border: '1px solid rgba(255, 255, 255, 0.08)'
         }}>
-          <div dangerouslySetInnerHTML={{ __html: page.content || '<p>Content not available</p>' }} />
+          <div dangerouslySetInnerHTML={{ __html: sanitizeArticleHtml(page.content || "<p>Content not available</p>") }} />
 
           {/* Mid-Article CTA */}
           <div className="mid-cta" style={{
@@ -327,7 +339,7 @@ export default async function ArticlePage({ params }: PageProps) {
             <div style={{
               width: '56px',
               height: '56px',
-              background: 'linear-gradient(135deg, #cfa13b 0%, #747637 100%)',
+              background: '#cfa13b',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
@@ -335,7 +347,7 @@ export default async function ArticlePage({ params }: PageProps) {
               margin: '0 auto 20px',
               boxShadow: '0 8px 32px rgba(207, 161, 59, 0.3)'
             }}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1c1d10" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 2L2 7l10 5 10-5-10-5z"/>
                 <path d="M2 17l10 5 10-5"/>
                 <path d="M2 12l10 5 10-5"/>
@@ -366,8 +378,8 @@ export default async function ArticlePage({ params }: PageProps) {
                 alignItems: 'center',
                 gap: '10px',
                 padding: '18px 40px',
-                background: 'linear-gradient(135deg, #cfa13b 0%, #747637 100%)',
-                color: '#ffffff',
+                background: '#cfa13b',
+                color: '#1c1d10',
                 fontSize: '1.125rem',
                 fontWeight: 700,
                 borderRadius: '100px',
@@ -389,7 +401,7 @@ export default async function ArticlePage({ params }: PageProps) {
         <div className="bottom-cta" style={{
           marginTop: '48px',
           padding: '56px 48px',
-          background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)',
+          background: '#121216',
           borderRadius: '28px',
           textAlign: 'center',
           position: 'relative',
@@ -412,7 +424,7 @@ export default async function ArticlePage({ params }: PageProps) {
             <div style={{
               width: '72px',
               height: '72px',
-              background: 'linear-gradient(135deg, #cfa13b 0%, #747637 100%)',
+              background: '#cfa13b',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
@@ -421,7 +433,7 @@ export default async function ArticlePage({ params }: PageProps) {
               boxShadow: '0 12px 48px rgba(207, 161, 59, 0.4)',
               animation: 'pulse 2s ease-in-out infinite'
             }}>
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#1c1d10" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
               </svg>
             </div>
@@ -429,7 +441,7 @@ export default async function ArticlePage({ params }: PageProps) {
             <h2 style={{
               fontSize: '2.5rem',
               fontWeight: 900,
-              background: 'linear-gradient(135deg, #ffffff 0%, #c7d2fe 100%)',
+              background: 'linear-gradient(135deg, #ffffff 0%, #efbe76 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -459,14 +471,14 @@ export default async function ArticlePage({ params }: PageProps) {
                 alignItems: 'center',
                 gap: '12px',
                 padding: '22px 52px',
-                background: 'linear-gradient(135deg, #cfa13b 0%, #747637 50%, #747637 100%)',
-                color: '#ffffff',
+                background: '#cfa13b',
+                color: '#1c1d10',
                 fontSize: '1.25rem',
                 fontWeight: 800,
                 borderRadius: '100px',
                 textDecoration: 'none',
                 transition: 'all 0.3s ease',
-                boxShadow: '0 16px 60px rgba(59, 130, 246, 0.5)',
+                boxShadow: '0 16px 60px rgba(207, 161, 59, 0.5)',
                 border: 'none',
                 letterSpacing: '0.02em'
               }}

@@ -13,6 +13,9 @@ import {
   Settings,
   Crown,
   Rocket,
+  BookOpen,
+  Package,
+  ShieldCheck,
   LogOut,
   X,
 } from 'lucide-react'
@@ -37,9 +40,13 @@ const mainMore = [
 ]
 
 const premiumItems = [
-  { title: 'DFY Vault', url: '/upgrades/dfy-vault', icon: Crown },
+  { title: 'Done-For-You Profit', url: '/upgrades/dfy-profit', icon: Package },
+  { title: 'Unlimited', url: '/upgrades/dfy-vault', icon: Crown },
   { title: 'Instant Income', url: '/upgrades/instant-income', icon: Sparkles },
   { title: 'Automated Income', url: '/upgrades/automated-income', icon: Rocket },
+  { title: 'Guaranteed High-Ticket Payouts', url: '/upgrades/high-ticket-payouts', icon: BookOpen },
+  { title: 'Reseller & License Rights', url: '/upgrades/license-rights', icon: FileText },
+  { title: 'Cyber Protection', url: '/upgrades/protector', icon: ShieldCheck },
 ]
 
 /** Fixed bottom tab bar for mobile. Hidden on desktop (lg+) where the sidebar lives. */

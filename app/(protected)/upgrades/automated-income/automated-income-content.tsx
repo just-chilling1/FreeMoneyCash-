@@ -1,13 +1,31 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
-import { ArrowLeft, TrendingUp, CheckCircle2, ExternalLink, Clock, Users, Play, Sparkles } from "lucide-react"
+import { ArrowLeft, TrendingUp, CheckCircle2, ExternalLink, Clock, Users, Play, Sparkles, Search, Copy } from "lucide-react"
 import Link from "next/link"
+import { vimeoPlayerUrl } from "@/lib/training-videos"
+import { cn } from "@/lib/utils"
+
+const TRAINING_VIMEO_ID = "1134298104"
+
+function completedStorageKey(userId: string) {
+  return `automated-income-completed:${userId}`
+}
+
+function parseTrafficMidpoint(range: string) {
+  const matches = range.match(/\d+/g)
+  if (!matches || matches.length < 2) return 0
+  return (Number(matches[0]) + Number(matches[1])) / 2
+}
+
+function parseMinutes(time: string) {
+  return Number(time.match(/\d+/)?.[0] ?? 0)
+}
 
 interface TrafficSource {
   id: string
@@ -1988,8 +2006,14 @@ export function AutomatedIncomeContent({ userId }: { userId: string }) {
   const [selectedSource, setSelectedSource] = useState<TrafficSource | null>(null)
   const [pageUrl, setPageUrl] = useState("")
   const [selectedNiche, setSelectedNiche] = useState<string>("All")
+  const [selectedCategory, setSelectedCategory] = useState("All")
+  const [query, setQuery] = useState("")
+  const [sort, setSort] = useState<"traffic" | "time" | "name">("traffic")
+  const [hideCompleted, setHideCompleted] = useState(false)
   const [completedSources, setCompletedSources] = useState<Set<string>>(new Set())
+  const [progressReady, setProgressReady] = useState(false)
   const [isVideoPlaying, setIsVideoPlaying] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   const niches = [
     "All",
@@ -2003,8 +2027,61 @@ export function AutomatedIncomeContent({ userId }: { userId: string }) {
     "Home & Garden",
   ]
 
-  const filteredSources =
-    selectedNiche === "All" ? trafficSources : trafficSources.filter((s) => s.niche === selectedNiche)
+  useEffect(() => {
+    try {
+      const savedIds = localStorage.getItem(completedStorageKey(userId))
+      if (savedIds) {
+        const ids = JSON.parse(savedIds) as string[]
+        if (Array.isArray(ids)) setCompletedSources(new Set(ids.filter((id) => typeof id === "string")))
+      }
+      const savedUrl = localStorage.getItem(`automated-income-url:${userId}`)
+      if (savedUrl) setPageUrl(savedUrl)
+    } catch {
+      // Ignore unreadable local progress.
+    }
+    setProgressReady(true)
+  }, [userId])
+
+  useEffect(() => {
+    if (!progressReady) return
+    localStorage.setItem(completedStorageKey(userId), JSON.stringify([...completedSources]))
+  }, [completedSources, progressReady, userId])
+
+  useEffect(() => {
+    if (!progressReady) return
+    localStorage.setItem(`automated-income-url:${userId}`, pageUrl)
+  }, [pageUrl, progressReady, userId])
+
+  const nicheSources = useMemo(
+    () => (selectedNiche === "All" ? trafficSources : trafficSources.filter((source) => source.niche === selectedNiche)),
+    [selectedNiche],
+  )
+
+  const categories = useMemo(
+    () => ["All", ...Array.from(new Set(nicheSources.map((source) => source.category)))],
+    [nicheSources],
+  )
+
+  const visibleSources = useMemo(() => {
+    const needle = query.trim().toLowerCase()
+    const list = nicheSources.filter((source) => {
+      if (selectedCategory !== "All" && source.category !== selectedCategory) return false
+      if (hideCompleted && completedSources.has(source.id)) return false
+      if (!needle) return true
+      return `${source.name} ${source.category} ${source.niche}`.toLowerCase().includes(needle)
+    })
+    return [...list].sort((a, b) => {
+      if (sort === "name") return a.name.localeCompare(b.name)
+      if (sort === "time") return parseMinutes(a.timeToComplete) - parseMinutes(b.timeToComplete)
+      return parseTrafficMidpoint(b.trafficPotential) - parseTrafficMidpoint(a.trafficPotential)
+    })
+  }, [completedSources, hideCompleted, nicheSources, query, selectedCategory, sort])
+
+  const completedInNiche = nicheSources.filter((source) => completedSources.has(source.id)).length
+  const progress = nicheSources.length ? Math.round((completedInNiche / nicheSources.length) * 100) : 0
+  const monthlyVisitors = Math.round(
+    nicheSources.reduce((sum, source) => sum + parseTrafficMidpoint(source.trafficPotential), 0),
+  )
 
   const handleMarkComplete = (sourceId: string) => {
     setCompletedSources((prev) => new Set([...prev, sourceId]))
@@ -2014,161 +2091,149 @@ export function AutomatedIncomeContent({ userId }: { userId: string }) {
     ? selectedSource.submissionDescription.replace("[YOUR_LINK]", pageUrl || "[YOUR_LINK]")
     : ""
 
+  const handleCopyDescription = () => {
+    const text = populatedDescription || selectedSource?.submissionDescription || ""
+    if (!text) return
+    navigator.clipboard.writeText(text)
+    setCopied(true)
+    window.setTimeout(() => setCopied(false), 2000)
+  }
+
   return (
-    <div className="space-y-8 max-w-7xl mx-auto pb-12">
-      <Button asChild variant="ghost" className="text-emerald-400 hover:text-emerald-300">
+    <div className="mx-auto max-w-6xl space-y-8 pb-12">
+      <Button asChild variant="ghost" className="border border-primary/60 text-primary hover:border-primary hover:bg-primary/10 hover:text-accent">
         <Link href="/dashboard">
-          <ArrowLeft className="w-5 h-5 mr-2" />
+          <ArrowLeft className="mr-2 h-5 w-5" />
           Back to Dashboard
         </Link>
       </Button>
 
-      {/* Header */}
-      <div className="text-center space-y-6 bg-gradient-to-br from-emerald-500/10 to-green-500/10 rounded-2xl p-12 border border-emerald-500/20">
-        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/50">
-          <TrendingUp className="w-12 h-12 text-white" />
+      <div className="space-y-6 rounded-2xl border border-primary/25 bg-primary/5 p-8 text-center md:p-12">
+        <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent shadow-lg shadow-primary/40">
+          <TrendingUp className="h-12 w-12 text-primary-foreground" />
         </div>
         <div>
-          <h1 className="text-5xl lg:text-6xl font-black text-white mb-4">Automated Income - Traffic On Autopilot</h1>
-          <p className="text-2xl text-emerald-300 font-bold mb-4">
-            100+ Free Traffic Sources - Submit Once, Get Traffic Forever
+          <h1 className="mb-4 text-4xl font-black text-foreground lg:text-6xl">
+            Automated Income — Traffic On Autopilot
+          </h1>
+          <p className="mb-3 text-xl font-bold text-accent md:text-2xl">
+            {trafficSources.length} free traffic sources. Submit once, keep the visitors.
           </p>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed font-semibold">
-            Stop chasing traffic every day. Submit your link to these 100+ sites ONCE and get ongoing traffic
-            automatically. Our members have generated over 2.8 million visitors using these sources.
+          <p className="mx-auto max-w-3xl text-lg font-semibold leading-relaxed text-muted-foreground md:text-xl">
+            Pick a niche, paste the page you want to promote, and follow the steps for each source. Your progress and
+            page URL stay on this device so you can pick up where you left off.
           </p>
         </div>
       </div>
 
-      <Card highlighted className="glass-strong border-emerald-500/30 glow-purple overflow-hidden shadow-2xl">
+      <Card highlighted className="overflow-hidden border-primary/30 glass-strong glow-purple shadow-2xl">
         <CardContent className="p-0">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
-            {/* Video Player */}
+          <div className="grid grid-cols-1 gap-0 lg:grid-cols-2">
             <div className="relative aspect-video bg-black">
               {!isVideoPlaying ? (
-                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800">
-                  <div className="absolute inset-0">
-                    <iframe
-                      src="https://player.vimeo.com/video/1134298104?badge=0&autopause=0&player_id=0&app_id=58479&background=1&muted=1"
-                      title="Automated Income Preview"
-                      allow="autoplay; fullscreen; picture-in-picture"
-                      className="absolute inset-0 w-full h-full border-0 pointer-events-none"
-                    />
-                  </div>
+                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-background to-card">
+                  <iframe
+                    src={vimeoPlayerUrl(TRAINING_VIMEO_ID, { background: true })}
+                    title="Automated Income preview"
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    className="pointer-events-none absolute inset-0 h-full w-full border-0"
+                  />
                   <div className="absolute inset-0 bg-black/40" />
                   <Button
                     size="lg"
                     onClick={() => setIsVideoPlaying(true)}
-                    className="relative z-10 h-24 w-24 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white shadow-2xl hover:scale-110 transition-all duration-300 border-4 border-white/20"
+                    className="relative z-10 h-24 w-24 rounded-full border-4 border-primary-foreground/20 shadow-2xl transition-all duration-300 hover:scale-110"
                   >
-                    <Play className="w-12 h-12 ml-1 fill-white" />
+                    <Play className="ml-1 h-12 w-12 fill-primary-foreground text-primary-foreground" />
                   </Button>
                   <div className="absolute bottom-8 left-0 right-0 text-center">
-                    <p className="text-white text-xl font-black drop-shadow-lg">▶ Watch Automated Income Tutorial</p>
+                    <p className="text-xl font-black text-white drop-shadow-lg">Watch Automated Income Tutorial</p>
                   </div>
                 </div>
               ) : (
-                <div className="relative w-full h-full">
-                  <iframe
-                    src="https://player.vimeo.com/video/1134298104?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&controls=1"
-                    title="Automated Income Tutorial"
-                    allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
-                    allowFullScreen
-                    className="absolute inset-0 w-full h-full border-0"
-                  />
-                </div>
+                <iframe
+                  src={vimeoPlayerUrl(TRAINING_VIMEO_ID, { autoplay: true })}
+                  title="Automated Income Tutorial"
+                  allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
+                  allowFullScreen
+                  className="absolute inset-0 h-full w-full border-0"
+                />
               )}
             </div>
 
-            {/* Video Info */}
-            <div className="p-8 flex flex-col justify-center space-y-4 bg-gradient-to-br from-emerald-500/10 to-green-500/10">
+            <div className="flex flex-col justify-center space-y-4 bg-primary/5 p-8">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-6 h-6 text-emerald-400" />
-                <span className="text-emerald-400 font-black text-sm uppercase tracking-wider">Watch First</span>
+                <Sparkles className="h-6 w-6 text-primary" />
+                <span className="text-sm font-black uppercase tracking-wider text-primary">Watch First</span>
               </div>
-              <div>
-                <h2 className="text-3xl font-black text-white mb-3">How to Use Automated Income</h2>
-                <p className="text-xl text-gray-300 leading-relaxed font-bold">
-                  Watch this quick tutorial to learn how to submit your link to these 100+ traffic sources and get
-                  automated traffic forever!
-                </p>
-              </div>
+              <h2 className="text-3xl font-black text-foreground">How to Use Automated Income</h2>
+              <p className="text-xl font-bold leading-relaxed text-muted-foreground">
+                Watch this short walkthrough, then submit your page to the sources below. Each card has the steps and
+                the description to paste.
+              </p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Simple Explanation */}
-      <Card className="bg-gradient-to-br from-emerald-900/30 to-green-900/30 border-emerald-500/30 shadow-xl">
+      <Card className="border-primary/30 glass-strong shadow-xl">
         <CardHeader>
-          <CardTitle className="text-3xl font-black text-white flex items-center gap-3">
-            <Users className="w-8 h-8 text-emerald-400" />
-            How This Works (Super Simple!)
+          <CardTitle className="flex items-center gap-3 text-3xl font-black text-foreground">
+            <Users className="h-8 w-8 text-primary" />
+            How this works
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="bg-emerald-500/10 rounded-xl p-8 border border-emerald-500/30">
-            <p className="text-2xl text-white font-black mb-6">The Secret To Automated Traffic:</p>
-            <p className="text-xl text-gray-300 font-semibold leading-relaxed mb-6">
-              Most people waste hours every day posting on social media for traffic.
-            </p>
-            <p className="text-xl text-gray-300 font-semibold leading-relaxed mb-6">
-              But what if you could submit your link ONCE and get traffic for months or even YEARS?
-            </p>
-            <p className="text-xl text-emerald-300 font-black leading-relaxed">
-              That's exactly what these traffic sources do. You submit once, and they send you visitors automatically -
-              no daily work required!
+          <div className="rounded-xl border border-primary/30 bg-primary/10 p-6 md:p-8">
+            <p className="mb-4 text-2xl font-black text-foreground">Submit once. Traffic keeps coming.</p>
+            <p className="text-lg font-semibold leading-relaxed text-muted-foreground">
+              Daily posting fades the moment you stop. These sources keep sending visitors after a one-time submission —
+              a profile, a signature, a pin, or a listing. Do a batch, then let them work.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-emerald-500/10 rounded-xl p-6 border border-emerald-500/30">
-              <div className="w-16 h-16 rounded-full bg-emerald-500 flex items-center justify-center mb-4 text-2xl font-black text-white">
-                1
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            {[
+              {
+                num: "1",
+                title: "Pick your niche",
+                desc: "Filter the list to the market you promote. Search by name if you already know the site.",
+              },
+              {
+                num: "2",
+                title: "Submit your link",
+                desc: "Open a source, follow the steps, and paste the description with your page URL already filled in.",
+              },
+              {
+                num: "3",
+                title: "Mark it done",
+                desc: "Check off each source. Progress is saved in this browser so you can continue later.",
+              },
+            ].map((step) => (
+              <div key={step.num} className="rounded-xl border border-primary/25 bg-primary/10 p-6">
+                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-2xl font-black text-primary-foreground">
+                  {step.num}
+                </div>
+                <h3 className="mb-3 text-2xl font-black text-foreground">{step.title}</h3>
+                <p className="text-lg font-semibold leading-relaxed text-muted-foreground">{step.desc}</p>
               </div>
-              <h3 className="text-2xl font-black text-white mb-3">Pick Your Niche</h3>
-              <p className="text-lg text-gray-300 font-semibold leading-relaxed">
-                Choose your niche below and get 100+ traffic sources specifically for your market.
-              </p>
-            </div>
-
-            <div className="bg-green-500/10 rounded-xl p-6 border border-green-500/30">
-              <div className="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center mb-4 text-2xl font-black text-white">
-                2
-              </div>
-              <h3 className="text-2xl font-black text-white mb-3">Submit Your Link</h3>
-              <p className="text-lg text-gray-300 font-semibold leading-relaxed">
-                Follow the simple step-by-step instructions to submit your link to each site. Takes 5-15 minutes per
-                site.
-              </p>
-            </div>
-
-            <div className="bg-teal-500/10 rounded-xl p-6 border border-teal-500/30">
-              <div className="w-16 h-16 rounded-full bg-teal-500 flex items-center justify-center mb-4 text-2xl font-black text-white">
-                3
-              </div>
-              <h3 className="text-2xl font-black text-white mb-3">Get Automatic Traffic</h3>
-              <p className="text-lg text-gray-300 font-semibold leading-relaxed">
-                Once submitted, these sites send you traffic automatically. No daily work needed!
-              </p>
-            </div>
+            ))}
           </div>
 
-          <div className="bg-yellow-500/10 rounded-xl p-6 border border-yellow-500/30">
-            <p className="text-xl text-yellow-300 font-black mb-3">💡 Pro Tip:</p>
-            <p className="text-lg text-gray-300 font-semibold leading-relaxed">
-              Set aside 2-3 hours and submit to as many sources as possible. The more you submit to, the more automatic
-              traffic you get. Most members submit to 50+ sources in their first week!
+          <div className="rounded-xl border border-primary/30 bg-primary/10 p-6">
+            <p className="mb-2 text-xl font-black text-accent">Start with a two-hour block</p>
+            <p className="text-lg font-semibold leading-relaxed text-muted-foreground">
+              Submit to as many sources as you can in one sitting. More listings means more automatic traffic. Most
+              people get through a large batch in their first week, then only add new ones.
             </p>
           </div>
         </CardContent>
       </Card>
 
-      {/* Page URL Input */}
-      <Card className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-emerald-500/30">
-        <CardContent className="p-8">
-          <Label htmlFor="page-url" className="text-2xl font-black text-white mb-4 block">
-            Enter Your Page URL:
+      <Card className="border-primary/30 glass-strong">
+        <CardContent className="space-y-3 p-6 md:p-8">
+          <Label htmlFor="page-url" className="block text-2xl font-black text-foreground">
+            Your page URL
           </Label>
           <Input
             id="page-url"
@@ -2176,185 +2241,277 @@ export function AutomatedIncomeContent({ userId }: { userId: string }) {
             placeholder="https://your-page-url.com"
             value={pageUrl}
             onChange={(e) => setPageUrl(e.target.value)}
-            className="bg-gray-800 border-emerald-500/30 text-white text-xl font-semibold h-14"
+            className="h-12 border-primary/30 bg-background text-base font-semibold text-foreground"
           />
-          <p className="text-base text-gray-400 font-semibold mt-3">
-            This is the page you want to promote. We'll automatically insert it in all the submission descriptions
-            below.
+          <p className="text-sm font-semibold text-muted-foreground">
+            This is the page you want to promote. It is inserted into every submission description, and it stays saved
+            on this device.
           </p>
         </CardContent>
       </Card>
 
-      {/* Niche Filter */}
-      <div className="flex gap-3 flex-wrap">
-        {niches.map((niche) => (
-          <Button
-            key={niche}
-            onClick={() => setSelectedNiche(niche)}
-            variant={selectedNiche === niche ? "default" : "outline"}
-            className={
-              selectedNiche === niche
-                ? "bg-emerald-500 hover:bg-emerald-600 text-white font-bold"
-                : "border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20 font-bold"
-            }
-            size="lg"
-          >
-            {niche}
-          </Button>
-        ))}
+      <div className="space-y-4">
+        <div className="flex flex-wrap gap-2">
+          {niches.map((niche) => {
+            const count = niche === "All" ? trafficSources.length : trafficSources.filter((source) => source.niche === niche).length
+            const selected = selectedNiche === niche
+            return (
+              <Button
+                key={niche}
+                type="button"
+                onClick={() => {
+                  setSelectedNiche(niche)
+                  setSelectedCategory("All")
+                }}
+                variant={selected ? "default" : "outline"}
+                className={cn(
+                  "h-auto min-h-11 px-3 py-2 text-xs font-bold sm:text-sm",
+                  !selected && "border-primary/30 text-accent hover:bg-primary/15",
+                )}
+              >
+                {niche}
+                <span className={cn("ml-1.5 text-[11px]", selected ? "text-primary-foreground/80" : "text-muted-foreground")}>
+                  {count}
+                </span>
+              </Button>
+            )
+          })}
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {categories.map((category) => {
+            const selected = selectedCategory === category
+            return (
+              <Button
+                key={category}
+                type="button"
+                size="sm"
+                onClick={() => setSelectedCategory(category)}
+                variant={selected ? "secondary" : "outline"}
+                className={cn(!selected && "border-primary/20 text-muted-foreground hover:text-foreground")}
+              >
+                {category}
+              </Button>
+            )
+          })}
+        </div>
       </div>
 
-      {/* Progress Tracker */}
-      <Card className="bg-gradient-to-br from-emerald-900/30 to-green-900/30 border-emerald-500/30">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
+      <Card className="border-primary/30 glass-strong">
+        <CardContent className="space-y-5 p-6">
+          <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-xl font-black text-white">Your Progress:</p>
-              <p className="text-lg text-gray-300 font-semibold">
-                {completedSources.size} of {filteredSources.length} sources completed
+              <p className="text-xl font-black text-foreground">Your progress</p>
+              <p className="text-base font-semibold text-muted-foreground">
+                {completedInNiche} of {nicheSources.length} sources completed
+                {selectedNiche !== "All" ? ` in ${selectedNiche}` : ""}
               </p>
             </div>
             <div className="text-right">
-              <p className="text-3xl font-black text-emerald-400">
-                {Math.round((completedSources.size / filteredSources.length) * 100)}%
+              <p className="text-3xl font-black text-primary">{progress}%</p>
+              <p className="text-sm font-semibold text-muted-foreground">
+                ~{monthlyVisitors.toLocaleString()} visitors/month if you finish this list
               </p>
-              <p className="text-sm text-gray-400 font-semibold">Complete</p>
             </div>
           </div>
-          <div className="w-full bg-gray-700 rounded-full h-4 mt-4">
+          <div className="h-3 w-full overflow-hidden rounded-full bg-muted">
             <div
-              className="bg-gradient-to-r from-emerald-500 to-green-500 h-4 rounded-full transition-all"
-              style={{ width: `${(completedSources.size / filteredSources.length) * 100}%` }}
+              className="h-3 rounded-full bg-gradient-to-r from-primary to-accent transition-all"
+              style={{ width: `${progress}%` }}
             />
+          </div>
+
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+            <div className="relative min-w-0 flex-1">
+              <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search sources"
+                aria-label="Search traffic sources"
+                className="h-11 border-primary/30 bg-background pl-9 text-foreground"
+              />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {(
+                [
+                  ["traffic", "Highest traffic"],
+                  ["time", "Quickest"],
+                  ["name", "A–Z"],
+                ] as const
+              ).map(([value, label]) => (
+                <Button
+                  key={value}
+                  type="button"
+                  size="sm"
+                  variant={sort === value ? "default" : "outline"}
+                  onClick={() => setSort(value)}
+                  className={cn(sort !== value && "border-primary/30 text-accent hover:bg-primary/15")}
+                >
+                  {label}
+                </Button>
+              ))}
+              <Button
+                type="button"
+                size="sm"
+                variant={hideCompleted ? "default" : "outline"}
+                onClick={() => setHideCompleted((hidden) => !hidden)}
+                className={cn(!hideCompleted && "border-primary/30 text-accent hover:bg-primary/15")}
+              >
+                {hideCompleted ? "Showing open only" : "Hide completed"}
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Traffic Sources Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredSources.map((source) => {
-          const isCompleted = completedSources.has(source.id)
-          return (
-            <Card
-              key={source.id}
-              className={`bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-emerald-500/20 hover:border-emerald-400/50 transition-all cursor-pointer ${
-                isCompleted ? "opacity-60" : ""
-              }`}
-              onClick={() => setSelectedSource(source)}
-            >
-              <CardContent className="p-8">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3 flex-wrap">
-                      <span className="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-sm font-bold rounded-full">
-                        {source.category}
+      {visibleSources.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-primary/30 bg-primary/5 px-5 py-12 text-center">
+          <p className="text-lg font-black text-foreground">No sources match these filters</p>
+          <p className="mt-2 text-sm font-semibold text-muted-foreground">
+            Clear the search or turn off “Hide completed” to see the rest of the list.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+          {visibleSources.map((source) => {
+            const isCompleted = completedSources.has(source.id)
+            return (
+              <Card
+                key={source.id}
+                className={cn(
+                  "border-primary/20 glass-strong transition-all hover:border-primary/50",
+                  isCompleted && "opacity-70",
+                )}
+              >
+                <CardContent className="space-y-4 p-6">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="rounded-full bg-primary/15 px-3 py-1 text-xs font-bold text-accent">
+                      {source.category}
+                    </span>
+                    <span className="rounded-full bg-secondary/50 px-3 py-1 text-xs font-bold text-foreground">
+                      {source.difficulty}
+                    </span>
+                    {selectedNiche === "All" ? (
+                      <span className="rounded-full border border-primary/20 px-3 py-1 text-xs font-bold text-muted-foreground">
+                        {source.niche}
                       </span>
-                      <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-sm font-bold rounded-full">
-                        {source.difficulty}
+                    ) : null}
+                    {isCompleted ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-3 py-1 text-xs font-bold text-accent">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        Completed
                       </span>
-                      {isCompleted && (
-                        <span className="px-3 py-1 bg-green-500/20 text-green-300 text-sm font-bold rounded-full flex items-center gap-1">
-                          <CheckCircle2 className="w-4 h-4" />
-                          Completed
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="text-2xl font-black text-white mb-3">{source.name}</h3>
-                    <div className="space-y-2 mb-4">
-                      <p className="text-emerald-300 font-bold flex items-center gap-2">
-                        <Users className="w-5 h-5" />
-                        Traffic: {source.trafficPotential}
-                      </p>
-                      <p className="text-blue-300 font-bold flex items-center gap-2">
-                        <Clock className="w-5 h-5" />
-                        Time: {source.timeToComplete}
-                      </p>
-                    </div>
+                    ) : null}
                   </div>
-                </div>
-                <Button className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black text-lg" size="lg">
-                  <ExternalLink className="w-5 h-5 mr-2" />
-                  View Instructions
-                </Button>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
+                  <h3 className="text-xl font-black text-foreground">{source.name}</h3>
+                  <div className="space-y-1.5">
+                    <p className="flex items-center gap-2 text-sm font-bold text-accent">
+                      <Users className="h-4 w-4" />
+                      {source.trafficPotential}
+                    </p>
+                    <p className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+                      <Clock className="h-4 w-4" />
+                      {source.timeToComplete}
+                    </p>
+                  </div>
+                  <Button type="button" className="w-full text-base" size="lg" onClick={() => setSelectedSource(source)}>
+                    <ExternalLink className="mr-2 h-5 w-5" />
+                    View instructions
+                  </Button>
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
+      )}
 
-      {/* Source Detail Modal */}
-      <Dialog open={!!selectedSource} onOpenChange={() => setSelectedSource(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-gray-900 border-emerald-500/30">
+      <Dialog
+        open={!!selectedSource}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedSource(null)
+            setCopied(false)
+          }
+        }}
+      >
+        <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto border-primary/30 bg-background">
           <DialogHeader>
-            <DialogTitle className="text-3xl font-black text-white">{selectedSource?.name}</DialogTitle>
-            <DialogDescription className="text-lg font-semibold text-gray-300">
-              Traffic Potential: {selectedSource?.trafficPotential} | Time: {selectedSource?.timeToComplete}
+            <DialogTitle className="text-3xl font-black text-foreground">{selectedSource?.name}</DialogTitle>
+            <DialogDescription className="text-base font-semibold text-muted-foreground">
+              {selectedSource?.trafficPotential} · {selectedSource?.timeToComplete} · {selectedSource?.difficulty}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-6">
-            <div className="flex gap-3">
-              <Button
-                asChild
-                className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-lg"
-                size="lg"
-              >
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Button asChild className="flex-1 text-base" size="lg">
                 <a href={selectedSource?.url} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="w-5 h-5 mr-2" />
-                  Go To Site
+                  <ExternalLink className="mr-2 h-5 w-5" />
+                  Go to site
                 </a>
               </Button>
               <Button
+                type="button"
                 onClick={() => selectedSource && handleMarkComplete(selectedSource.id)}
                 variant="outline"
-                className="border-green-500/30 text-green-300 hover:bg-green-500/20 font-black"
+                className="border-primary/30 text-base font-black text-accent hover:bg-primary/15"
                 size="lg"
                 disabled={selectedSource ? completedSources.has(selectedSource.id) : false}
               >
-                <CheckCircle2 className="w-5 h-5 mr-2" />
-                {selectedSource && completedSources.has(selectedSource.id) ? "Completed" : "Mark Complete"}
+                <CheckCircle2 className="mr-2 h-5 w-5" />
+                {selectedSource && completedSources.has(selectedSource.id) ? "Completed" : "Mark complete"}
               </Button>
             </div>
 
-            <div className="bg-emerald-500/10 rounded-xl p-6 border border-emerald-500/30">
-              <h4 className="text-2xl font-black text-white mb-4">📋 Step-By-Step Instructions:</h4>
+            <div className="rounded-xl border border-primary/30 bg-primary/10 p-6">
+              <h4 className="mb-4 text-xl font-black text-foreground">Step-by-step</h4>
               <ol className="space-y-4">
                 {selectedSource?.instructions.map((instruction, index) => (
-                  <li key={index} className="flex gap-4">
-                    <span className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center text-white font-black">
+                  <li key={instruction} className="flex gap-4">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-black text-primary-foreground">
                       {index + 1}
                     </span>
-                    <p className="text-lg text-gray-300 font-semibold leading-relaxed pt-1">{instruction}</p>
+                    <p className="pt-1 text-base font-semibold leading-relaxed text-muted-foreground">{instruction}</p>
                   </li>
                 ))}
               </ol>
             </div>
 
-            <div className="bg-gray-800/50 rounded-xl p-6 border border-emerald-500/20">
-              <h4 className="text-xl font-black text-white mb-4">📝 Use This Description When Submitting:</h4>
-              <div className="bg-gray-900 rounded-lg p-4 border border-emerald-500/20">
-                <p className="text-gray-300 font-mono text-base leading-relaxed">
+            <div className="rounded-xl border border-primary/20 bg-card p-6">
+              <h4 className="mb-4 text-xl font-black text-foreground">Description to paste</h4>
+              <div className="rounded-lg border border-primary/20 bg-background p-4">
+                <p className="font-mono text-sm leading-relaxed text-foreground">
                   {pageUrl ? populatedDescription : selectedSource?.submissionDescription}
                 </p>
               </div>
               <Button
-                onClick={() => {
-                  navigator.clipboard.writeText(populatedDescription || selectedSource?.submissionDescription || "")
-                }}
+                type="button"
+                onClick={handleCopyDescription}
                 variant="outline"
-                className="mt-4 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20 font-bold"
+                className="mt-4 border-primary/30 font-bold text-accent hover:bg-primary/15"
               >
-                Copy Description
+                {copied ? (
+                  <>
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                    Copied
+                  </>
+                ) : (
+                  <>
+                    <Copy className="mr-2 h-4 w-4" />
+                    Copy description
+                  </>
+                )}
               </Button>
             </div>
 
-            {!pageUrl && (
-              <div className="bg-yellow-500/10 rounded-xl p-6 border border-yellow-500/30">
-                <p className="text-yellow-300 font-bold text-lg">
-                  💡 Tip: Enter your page URL above to automatically populate it in all descriptions!
+            {!pageUrl ? (
+              <div className="rounded-xl border border-primary/30 bg-primary/10 p-5">
+                <p className="text-base font-bold text-accent">
+                  Add your page URL above and it will replace [YOUR_LINK] in this description.
                 </p>
               </div>
-            )}
+            ) : null}
           </div>
         </DialogContent>
       </Dialog>

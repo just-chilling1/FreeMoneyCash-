@@ -2,13 +2,19 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { ArrowRight, Crown, Rocket, Sparkles } from "lucide-react"
+import { ArrowRight, BookOpen, Crown, FileText, Package, Rocket, ShieldCheck, Sparkles } from "lucide-react"
 
 const PREMIUM_FEATURES = [
   {
+    href: "/upgrades/dfy-profit",
+    label: "Done-For-You Profit",
+    description: "One link and one niche become videos, an article, and Facebook posts.",
+    icon: Package,
+  },
+  {
     href: "/upgrades/dfy-vault",
-    label: "DFY Vault",
-    description: "Done-for-you articles ready to copy and earn.",
+    label: "Unlimited",
+    description: "200 done-for-you pages. Preview one, then publish it with your link.",
     icon: Crown,
   },
   {
@@ -22,6 +28,24 @@ const PREMIUM_FEATURES = [
     label: "Automated Income",
     description: "Systems that keep commissions coming in.",
     icon: Rocket,
+  },
+  {
+    href: "/upgrades/high-ticket-payouts",
+    label: "Guaranteed High-Ticket Payouts",
+    description: "100 authority articles with your offer link woven in.",
+    icon: BookOpen,
+  },
+  {
+    href: "/upgrades/license-rights",
+    label: "Reseller & License Rights",
+    description: "Request reseller license rights — our team activates the edition.",
+    icon: FileText,
+  },
+  {
+    href: "/upgrades/protector",
+    label: "Cyber Protection",
+    description: "Keep your account and links safe and healthy.",
+    icon: ShieldCheck,
   },
 ]
 

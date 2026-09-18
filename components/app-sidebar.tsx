@@ -16,6 +16,9 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Headphones,
+  BookOpen,
+  Package,
+  ShieldCheck,
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -35,9 +38,13 @@ const menuItems = [
 ]
 
 const premiumItems = [
-  { title: 'DFY Vault', url: '/upgrades/dfy-vault', icon: Crown },
+  { title: 'Done-For-You Profit', url: '/upgrades/dfy-profit', icon: Package },
+  { title: 'Unlimited', url: '/upgrades/dfy-vault', icon: Crown },
   { title: 'Instant Income', url: '/upgrades/instant-income', icon: Sparkles },
   { title: 'Automated Income', url: '/upgrades/automated-income', icon: Rocket },
+  { title: 'Guaranteed High-Ticket Payouts', url: '/upgrades/high-ticket-payouts', icon: BookOpen },
+  { title: 'Reseller & License Rights', url: '/upgrades/license-rights', icon: FileText },
+  { title: 'Cyber Protection', url: '/upgrades/protector', icon: ShieldCheck },
 ]
 
 const COLLAPSE_KEY = 'fmc_sidebar_collapsed'

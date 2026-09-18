@@ -12,7 +12,7 @@ import { ChevronRight, FileText, GraduationCap, Shield } from "lucide-react"
 function planLabel(level: string | null | undefined) {
   switch (level) {
     case "dfy_vault":
-      return "DFY Vault"
+      return "Unlimited"
     case "instant_income":
       return "Instant Income"
     case "automated_income":

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent } from "@/components/ui/card"
 import { CheckCircle2, GraduationCap, Headphones } from "lucide-react"
+import { SUPPORT_EMAIL } from "@/lib/support-config"
 import { ACADEMY_TRAINING_VIDEOS } from "@/lib/training-videos"
 import { AcademyTrainingVideoCard } from "@/components/dashboard/academy-training-video-card"
 
@@ -94,10 +95,10 @@ export default async function TrainingPage() {
             <p className="text-base text-muted-foreground sm:text-lg">
               Questions about the training? Email{" "}
               <a
-                href="mailto:support@freemoneycash.com"
+                href={`mailto:${SUPPORT_EMAIL}`}
                 className="font-bold text-primary hover:underline"
               >
-                support@freemoneycash.com
+                {SUPPORT_EMAIL}
               </a>{" "}
               anytime — we usually reply within a few hours.
             </p>

@@ -12,5 +12,5 @@ export default async function DFYVaultPage() {
     redirect("/auth/login")
   }
 
-  return <DFYVaultContent userId={user.id} />
+  return <DFYVaultContent />
 }

@@ -7,7 +7,7 @@ export default function UnlockInstantIncomePage() {
       upgradeName="Instant Income"
       upgradeValue="$97"
       features={[
-        "Everything in DFY Vault",
+        "Everything in Unlimited",
         "100+ High-Converting Offers",
         "Advanced training videos",
         "Email swipe files",
