@@ -56,42 +56,49 @@ function TrainingCard({
   onPlay: () => void
 }) {
   return (
-    <Card className="overflow-hidden border-border bg-card">
+    <Card highlighted className="overflow-hidden border-primary/20 glass-strong">
       <CardContent className="grid grid-cols-1 gap-0 p-0 md:grid-cols-2">
-        <div className="relative aspect-video bg-background">
+        <div className="relative aspect-video bg-black">
           {playing ? (
             <iframe
               src={vimeoPlayerUrl(TRAINING.vimeoId, { autoplay: true })}
               title={TRAINING.title}
-              allow="autoplay; fullscreen; picture-in-picture"
+              allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
               allowFullScreen
               className="absolute inset-0 h-full w-full border-0"
             />
           ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-secondary/40 to-background">
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800">
               <iframe
                 src={vimeoPlayerUrl(TRAINING.vimeoId, { background: true })}
                 title={`${TRAINING.title} preview`}
+                allow="autoplay; fullscreen; picture-in-picture"
                 tabIndex={-1}
-                className="pointer-events-none absolute inset-0 h-full w-full border-0 opacity-40"
+                className="pointer-events-none absolute inset-0 h-full w-full border-0"
               />
-              <button
-                type="button"
+              <div className="absolute inset-0 bg-black/40" />
+              <Button
+                size="lg"
                 onClick={onPlay}
-                className="absolute inset-0 flex flex-col items-center justify-center gap-3"
+                className="relative z-10 h-24 w-24 rounded-full border-4 border-primary/40 text-primary-foreground shadow-[0_0_24px_rgba(207,161,59,0.45)] transition-all duration-300 hover:scale-110"
               >
-                <span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md">
-                  <Play className="ml-0.5 h-6 w-6 fill-current" />
-                </span>
-                <span className="text-sm font-semibold text-foreground">Play</span>
-              </button>
+                <Play className="ml-1 h-12 w-12 fill-white" />
+              </Button>
+              <div className="absolute bottom-8 left-0 right-0 text-center">
+                <p className="text-xl font-black text-white drop-shadow-lg">Watch Unlimited Tutorial</p>
+              </div>
             </div>
           )}
         </div>
-        <div className="flex flex-col justify-center gap-2 p-5 sm:p-6">
-          <p className="text-xs font-semibold uppercase tracking-wide text-primary">{TRAINING.kicker}</p>
-          <h2 className="text-xl font-bold leading-snug text-foreground sm:text-2xl">{TRAINING.title}</h2>
-          <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">{TRAINING.description}</p>
+        <div className="flex flex-col justify-center space-y-4 bg-primary/5 p-5 sm:p-8">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-6 w-6 text-primary" />
+            <span className="text-sm font-black uppercase tracking-wider text-primary">{TRAINING.kicker}</span>
+          </div>
+          <h2 className="text-2xl font-black text-foreground sm:text-3xl">{TRAINING.title}</h2>
+          <p className="text-base font-semibold leading-relaxed text-muted-foreground sm:text-lg">
+            {TRAINING.description}
+          </p>
         </div>
       </CardContent>
     </Card>
@@ -390,7 +397,7 @@ export function DFYVaultContent() {
           ) : (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
               {visible.map((article) => (
-                <Card key={article.id} className="border-border bg-background">
+                <Card key={article.id} className="h-full border-border bg-background [&>div]:flex-1">
                   <CardContent className="flex h-full flex-col gap-3 p-4">
                     <div className="flex items-start justify-between gap-3">
                       <Badge variant="secondary" className="max-w-[70%] truncate font-medium">

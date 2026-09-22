@@ -1,12 +1,13 @@
 "use server"
 
-import { isValidAffiliateUrl } from "@/lib/affiliate-url"
 import { hashAffiliateUrl } from "@/lib/high-ticket-payouts/url-hash"
 import { createClient } from "@/lib/supabase/server"
 
 type ActionOk<T> = { success: true } & T
 type ActionFail = { success: false; error: string }
 type ActionResult<T extends object = object> = ActionOk<T> | ActionFail
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 function missingTableError(message: string) {
   return /high_ticket_article_usage|schema cache|does not exist|42P01/i.test(message)
@@ -29,23 +30,46 @@ async function requireUser() {
   return { supabase, user, error: null as null }
 }
 
-function resolveUrlHash(affiliateUrl?: string | null): { ok: true; urlHash: string } | { ok: false; error: string } {
-  const url = affiliateUrl?.trim() || ""
-  if (!url || !isValidAffiliateUrl(url)) {
-    return { ok: false, error: "Paste a valid https:// affiliate link first." }
+function highTicketUsageKey(pageId: string) {
+  return hashAffiliateUrl(`page:${pageId.trim()}`)
+}
+
+async function resolveOwnedPageHash(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  pageId?: string | null,
+): Promise<{ ok: true; urlHash: string; pageId: string } | { ok: false; error: string }> {
+  const id = pageId?.trim() || ""
+  if (!id || !UUID_RE.test(id)) {
+    return { ok: false, error: "Pick one of your pages first." }
   }
 
-  return { ok: true, urlHash: hashAffiliateUrl(url) }
+  const { data, error } = await supabase
+    .from("pages")
+    .select("id")
+    .eq("id", id)
+    .eq("user_id", userId)
+    .maybeSingle()
+
+  if (error) {
+    console.error("[high-ticket-usage] page lookup failed:", error.message)
+    return { ok: false, error: "Couldn’t verify that page. Please try again." }
+  }
+  if (!data) {
+    return { ok: false, error: "That page wasn’t found in your account." }
+  }
+
+  return { ok: true, urlHash: highTicketUsageKey(id), pageId: id }
 }
 
 export async function listHighTicketArticleUsage(input: {
-  affiliateUrl?: string | null
+  pageId?: string | null
 }): Promise<ActionResult<{ articleIds: number[] }>> {
   try {
     const { supabase, user, error } = await requireUser()
     if (!user) return { success: false, error }
 
-    const resolved = resolveUrlHash(input.affiliateUrl)
+    const resolved = await resolveOwnedPageHash(supabase, user.id, input.pageId)
     if (!resolved.ok) return { success: false, error: resolved.error }
 
     const { data, error: queryError } = await supabase
@@ -75,7 +99,7 @@ export async function listHighTicketArticleUsage(input: {
 
 export async function toggleHighTicketArticleUsage(input: {
   articleId: number
-  affiliateUrl?: string | null
+  pageId?: string | null
 }): Promise<ActionResult<{ used: boolean }>> {
   try {
     const { supabase, user, error } = await requireUser()
@@ -85,7 +109,7 @@ export async function toggleHighTicketArticleUsage(input: {
       return { success: false, error: "Invalid article." }
     }
 
-    const resolved = resolveUrlHash(input.affiliateUrl)
+    const resolved = await resolveOwnedPageHash(supabase, user.id, input.pageId)
     if (!resolved.ok) return { success: false, error: resolved.error }
 
     const { data: existing, error: existingError } = await supabase

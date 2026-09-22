@@ -15,15 +15,20 @@ import {
   ChevronRight,
   Clock,
   Copy,
+  ExternalLink,
   Eye,
   Filter,
+  FolderOpen,
+  LayoutTemplate,
   Link2,
   Loader2,
   Play,
+  Plus,
   Search,
   Sparkles,
   X,
 } from "lucide-react"
+import { saveHighTicketArticleToPage } from "@/app/actions/high-ticket-article"
 import {
   listHighTicketArticleUsage,
   toggleHighTicketArticleUsage,
@@ -32,7 +37,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { isValidAffiliateUrl } from "@/lib/affiliate-url"
+import { type DfyPageKit } from "@/lib/dfy-profit/page-kit"
 import { wrapArticleWithTitle } from "@/lib/high-ticket-payouts/article-content"
 import {
   ARTICLE_CATALOG,
@@ -42,6 +49,7 @@ import {
   type HighTicketArticle,
 } from "@/lib/high-ticket-payouts/catalog"
 import { replaceFeaturedImageUrl } from "@/lib/high-ticket-payouts/niche-images"
+import { type ProfitPageOption } from "@/lib/profit-pages/page-options"
 import { sanitizeArticleHtml } from "@/lib/sanitize-html"
 import { vimeoPlayerUrl } from "@/lib/training-videos"
 import { cn } from "@/lib/utils"
@@ -51,21 +59,21 @@ const CrossPlatformGuide = dynamic(() =>
 )
 
 const PAGE_SIZE = 24
-const LINK_STORAGE_KEY = "fmc_high_ticket_affiliate_url"
+const PAGE_STORAGE_KEY = "fmc_high_ticket_page_id"
 const TRAINING_VIMEO_ID = "1226546591"
 
 const BENEFITS = [
   "100 long-form articles",
   "9 high-ticket niches",
-  "Link woven into every CTA",
+  "Page link woven into every CTA",
   "Copy text or HTML",
 ] as const
 
 const STEPS = [
   {
     num: "1",
-    title: "Enter your link",
-    desc: "Paste any public affiliate URL that starts with https://. We weave it into every article CTA.",
+    title: "Pick a page",
+    desc: "Choose one of your profit pages. We weave its public URL into every article CTA.",
   },
   {
     num: "2",
@@ -75,7 +83,7 @@ const STEPS = [
   {
     num: "3",
     title: "Publish anywhere",
-    desc: "Copy plain text for Medium or LinkedIn, or HTML for your blog. One article a week builds lasting traffic.",
+    desc: "Copy plain text for Medium or LinkedIn, or HTML for your blog. Saved articles land on that page.",
   },
 ] as const
 
@@ -108,13 +116,21 @@ function htmlToPlainText(html: string): string {
     .trim()
 }
 
-export function HighTicketPayoutsContent() {
+export function HighTicketPayoutsContent({
+  initialPages = [],
+  initialError = "",
+}: {
+  initialPages?: ProfitPageOption[]
+  initialError?: string
+}) {
+  const [pages, setPages] = useState<ProfitPageOption[]>(initialPages)
+  const [selectedPageId, setSelectedPageId] = useState<string | null>(initialPages[0]?.id ?? null)
   const [niche, setNiche] = useState("all")
   const [query, setQuery] = useState("")
   const [usageFilter, setUsageFilter] = useState<UsageFilter>("all")
-  const [affiliateLink, setAffiliateLink] = useState("")
   const [previewId, setPreviewId] = useState<number | null>(null)
   const [articleHtml, setArticleHtml] = useState<Record<number, string>>({})
+  const [featuredImageByArticle, setFeaturedImageByArticle] = useState<Record<number, string>>({})
   const [loadingAction, setLoadingAction] = useState<{
     articleId: number
     action: "view" | "copy"
@@ -122,40 +138,60 @@ export function HighTicketPayoutsContent() {
   const [copiedMode, setCopiedMode] = useState<"text" | "html" | null>(null)
   const [copiedArticleId, setCopiedArticleId] = useState<number | null>(null)
   const [page, setPage] = useState(0)
-  const [error, setError] = useState("")
+  const [error, setError] = useState(initialError)
   const [usedArticleIds, setUsedArticleIds] = useState<Set<number>>(new Set())
   const [usageLoading, setUsageLoading] = useState(false)
   const [togglingUsageId, setTogglingUsageId] = useState<number | null>(null)
   const [usageError, setUsageError] = useState("")
+  const [saveNotice, setSaveNotice] = useState("")
   const [isVideoPlaying, setIsVideoPlaying] = useState(false)
   const previewRef = useRef<HTMLDivElement>(null)
 
-  const activeAffiliateUrl = affiliateLink.trim()
-  const linkIsValid = isValidAffiliateUrl(activeAffiliateUrl)
+  const selectedPage = pages.find((item) => item.id === selectedPageId) ?? null
+  const hasPage = Boolean(selectedPage)
+  const affiliateLink = selectedPage?.affiliateLink?.trim() ?? ""
+  const hasAffiliateLink = isValidAffiliateUrl(affiliateLink)
+  const canPersonalize = hasPage && hasAffiliateLink
+  const savedCatalogIds = useMemo(() => {
+    const ids = new Set<number>()
+    for (const article of selectedPage?.kit?.articles ?? []) {
+      if (article.source === "high_ticket" && typeof article.catalogId === "number") {
+        ids.add(article.catalogId)
+      } else if (article.id.startsWith("ht-")) {
+        const n = Number(article.id.slice(3))
+        if (Number.isFinite(n)) ids.add(n)
+      }
+    }
+    return ids
+  }, [selectedPage])
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(LINK_STORAGE_KEY)
-      if (saved) setAffiliateLink(saved)
+      const saved = localStorage.getItem(PAGE_STORAGE_KEY)
+      if (saved && pages.some((item) => item.id === saved)) {
+        setSelectedPageId(saved)
+      }
     } catch {
       /* ignore */
     }
+    // Only restore once on mount against the initial pages list.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
     try {
-      if (activeAffiliateUrl) localStorage.setItem(LINK_STORAGE_KEY, activeAffiliateUrl)
-      else localStorage.removeItem(LINK_STORAGE_KEY)
+      if (selectedPageId) localStorage.setItem(PAGE_STORAGE_KEY, selectedPageId)
+      else localStorage.removeItem(PAGE_STORAGE_KEY)
     } catch {
       /* ignore */
     }
-  }, [activeAffiliateUrl])
+  }, [selectedPageId])
 
   useEffect(() => {
     let cancelled = false
 
     async function loadUsage() {
-      if (!linkIsValid) {
+      if (!selectedPageId) {
         setUsedArticleIds(new Set())
         setUsageError("")
         return
@@ -163,7 +199,7 @@ export function HighTicketPayoutsContent() {
 
       setUsageLoading(true)
       setUsageError("")
-      const result = await listHighTicketArticleUsage({ affiliateUrl: activeAffiliateUrl })
+      const result = await listHighTicketArticleUsage({ pageId: selectedPageId })
       if (cancelled) return
 
       if (!result.success) {
@@ -181,7 +217,28 @@ export function HighTicketPayoutsContent() {
     return () => {
       cancelled = true
     }
-  }, [activeAffiliateUrl, linkIsValid])
+  }, [selectedPageId])
+
+  const applyKit = (pageId: string, kit: DfyPageKit) => {
+    setPages((prev) => prev.map((item) => (item.id === pageId ? { ...item, kit } : item)))
+  }
+
+  const persistArticleToPage = async (articleId: number, featuredImageUrl?: string | null) => {
+    if (!selectedPageId) return
+    const result = await saveHighTicketArticleToPage({
+      pageId: selectedPageId,
+      articleId,
+      featuredImageUrl: featuredImageUrl ?? featuredImageByArticle[articleId] ?? null,
+    })
+    if (!result.success) {
+      setUsageError(result.error)
+      return
+    }
+    applyKit(selectedPageId, result.kit)
+    const title = selectedPage?.title ?? "your page"
+    setSaveNotice(`Saved to “${title}”`)
+    setTimeout(() => setSaveNotice(""), 4000)
+  }
 
   const filteredArticles = useMemo(() => {
     const needle = query.trim().toLowerCase()
@@ -226,20 +283,22 @@ export function HighTicketPayoutsContent() {
   const personalizeArticle = async (
     article: HighTicketArticle,
     action: "view" | "copy",
-  ): Promise<string | null> => {
-    if (!activeAffiliateUrl) {
-      setError("Paste your affiliate link first.")
+  ): Promise<{ html: string; featuredImageUrl: string | null } | null> => {
+    if (!selectedPage) {
+      setError("Pick one of your pages first.")
       return null
     }
-
-    if (!linkIsValid) {
-      setError("Use a full link that starts with https://")
+    if (!hasAffiliateLink) {
+      setError("This page has no affiliate link. Edit the page or rebuild it with a valid https:// offer URL.")
       return null
     }
 
     if (articleHtml[article.id]) {
       setError("")
-      return articleHtml[article.id]
+      return {
+        html: articleHtml[article.id],
+        featuredImageUrl: featuredImageByArticle[article.id] ?? null,
+      }
     }
 
     setLoadingAction({ articleId: article.id, action })
@@ -247,7 +306,8 @@ export function HighTicketPayoutsContent() {
 
     await new Promise((resolve) => setTimeout(resolve, 1800))
 
-    let woven = weaveAffiliateLink(article.html, activeAffiliateUrl)
+    let woven = weaveAffiliateLink(article.html, affiliateLink)
+    let featuredImageUrl: string | null = null
 
     try {
       const res = await fetch("/api/premium/high-ticket-payouts/featured-image", {
@@ -258,7 +318,9 @@ export function HighTicketPayoutsContent() {
       if (res.ok) {
         const data = (await res.json()) as { url?: string }
         if (typeof data.url === "string" && data.url.trim()) {
-          woven = replaceFeaturedImageUrl(woven, data.url.trim())
+          featuredImageUrl = data.url.trim()
+          woven = replaceFeaturedImageUrl(woven, featuredImageUrl)
+          setFeaturedImageByArticle((prev) => ({ ...prev, [article.id]: featuredImageUrl! }))
         }
       }
     } catch {
@@ -267,7 +329,7 @@ export function HighTicketPayoutsContent() {
 
     setArticleHtml((prev) => ({ ...prev, [article.id]: woven }))
     setLoadingAction(null)
-    return woven
+    return { html: woven, featuredImageUrl }
   }
 
   const openPreview = async (articleId: number) => {
@@ -277,21 +339,22 @@ export function HighTicketPayoutsContent() {
     }
     const article = ARTICLE_CATALOG.find((item) => item.id === articleId)
     if (!article) return
-    const html = await personalizeArticle(article, "view")
-    if (html) setPreviewId(articleId)
+    const result = await personalizeArticle(article, "view")
+    if (result) setPreviewId(articleId)
   }
 
   const copyArticleFromCard = async (articleId: number) => {
     const article = ARTICLE_CATALOG.find((item) => item.id === articleId)
     if (!article) return
-    const html = await personalizeArticle(article, "copy")
-    if (!html) return
+    const result = await personalizeArticle(article, "copy")
+    if (!result) return
 
-    const exportHtml = sanitizeArticleHtml(wrapArticleWithTitle(article.title, html))
+    const exportHtml = sanitizeArticleHtml(wrapArticleWithTitle(article.title, result.html))
     const payload = `${article.title}\n\n${htmlToPlainText(exportHtml)}`
     await navigator.clipboard.writeText(payload)
     setCopiedArticleId(articleId)
     setTimeout(() => setCopiedArticleId(null), 2000)
+    void persistArticleToPage(articleId, result.featuredImageUrl)
   }
 
   const copyArticle = async (mode: "text" | "html") => {
@@ -306,11 +369,12 @@ export function HighTicketPayoutsContent() {
     await navigator.clipboard.writeText(payload)
     setCopiedMode(mode)
     setTimeout(() => setCopiedMode(null), 2000)
+    void persistArticleToPage(previewId, featuredImageByArticle[previewId] ?? null)
   }
 
   const toggleUsed = async (articleId: number) => {
-    if (!linkIsValid) {
-      setUsageError("Paste a valid https:// affiliate link first.")
+    if (!selectedPageId) {
+      setUsageError("Pick one of your pages first.")
       return
     }
 
@@ -326,7 +390,7 @@ export function HighTicketPayoutsContent() {
 
     const result = await toggleHighTicketArticleUsage({
       articleId,
-      affiliateUrl: activeAffiliateUrl,
+      pageId: selectedPageId,
     })
 
     setTogglingUsageId(null)
@@ -348,12 +412,18 @@ export function HighTicketPayoutsContent() {
       else next.delete(articleId)
       return next
     })
+
+    if (result.used) {
+      void persistArticleToPage(articleId)
+    }
   }
 
   useEffect(() => {
     setArticleHtml({})
+    setFeaturedImageByArticle({})
     setPreviewId(null)
-  }, [activeAffiliateUrl])
+    setSaveNotice("")
+  }, [selectedPageId])
 
   return (
     <div className="mx-auto max-w-6xl space-y-8">
@@ -378,8 +448,8 @@ export function HighTicketPayoutsContent() {
               {HIGH_TICKET_ARTICLE_TARGET_COUNT} authority articles ready to publish
             </p>
             <p className="mx-auto max-w-3xl text-lg font-semibold leading-relaxed text-muted-foreground md:text-xl">
-              Paste your affiliate link, preview a long-form article with that link in the CTA, then copy it for Medium,
-              LinkedIn, Quora, or your blog.
+              Pick one of your profit pages, preview a long-form article with that page&apos;s link in the CTA, then copy
+              it for Medium, LinkedIn, Quora, or your blog.
             </p>
           </div>
           <div className="mx-auto flex max-w-3xl flex-wrap justify-center gap-2">
@@ -399,7 +469,7 @@ export function HighTicketPayoutsContent() {
               { label: "Niches", value: String(HIGH_TICKET_NICHES.length) },
               {
                 label: "Used",
-                value: linkIsValid ? String(usedArticleIds.size) : "—",
+                value: hasPage ? String(usedArticleIds.size) : "—",
               },
             ].map((stat) => (
               <div key={stat.label} className="rounded-xl border border-primary/20 bg-background/60 px-3 py-3">
@@ -451,7 +521,7 @@ export function HighTicketPayoutsContent() {
                 </div>
                 <h2 className="text-3xl font-black text-foreground">How to Use High-Ticket Payouts</h2>
                 <p className="text-lg font-semibold leading-relaxed text-muted-foreground">
-                  Pick a template, preview it with your offer link inside, then copy plain text or HTML and publish.
+                  Pick a template, preview it with your page link inside, then copy plain text or HTML and publish.
                 </p>
                 <ul className="space-y-2">
                   {["One article a week is enough", "Same link works on every platform", "Mark used so you do not repeat"].map(
@@ -494,32 +564,144 @@ export function HighTicketPayoutsContent() {
           <CardHeader>
             <CardTitle className="flex items-center gap-3 text-2xl font-bold text-foreground">
               <Link2 className="h-7 w-7 text-primary" />
-              Enter your affiliate link
+              Choose a profit page
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-3">
-              <Label htmlFor="high-ticket-affiliate-link" className="text-base font-bold text-foreground">
-                Affiliate URL
-              </Label>
-              <Input
-                id="high-ticket-affiliate-link"
-                type="url"
-                placeholder="https://your-affiliate-link.com"
-                value={affiliateLink}
-                onChange={(event) => setAffiliateLink(event.target.value)}
-                className="h-14 text-base"
-              />
-              {linkIsValid ? (
-                <p
-                  role="status"
-                  className="flex items-start gap-2 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm font-semibold text-accent"
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <Label htmlFor="high-ticket-page" className="text-base font-bold text-foreground">
+                  Your page
+                </Label>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="h-9 border-primary/30 bg-transparent text-accent hover:bg-primary/15"
                 >
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-                  Link ready — previews will weave this URL into each article.
-                </p>
+                  <Link href="/create">
+                    <Plus className="mr-1.5 h-4 w-4" />
+                    Build a new page
+                  </Link>
+                </Button>
+              </div>
+
+              {pages.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-primary/30 bg-primary/5 px-5 py-10 text-center">
+                  <LayoutTemplate className="mx-auto h-8 w-8 text-primary" aria-hidden />
+                  <p className="mt-3 text-base font-bold text-foreground">You don’t have any pages yet</p>
+                  <p className="mx-auto mt-1 max-w-md text-sm font-semibold text-muted-foreground">
+                    High-Ticket Payouts weaves a link to a page you already own. Build one first, then come back here.
+                  </p>
+                  <div className="mt-5 flex flex-wrap justify-center gap-2">
+                    <Button asChild className="h-11">
+                      <Link href="/create">Build your first page</Link>
+                    </Button>
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="h-11 border-primary/30 bg-transparent text-accent hover:bg-primary/15"
+                    >
+                      <Link href="/upgrades/dfy-profit">Use Done-For-You Profit</Link>
+                    </Button>
+                  </div>
+                </div>
               ) : (
-                <p className="text-sm text-muted-foreground">Must be a public link that starts with https://</p>
+                <>
+                  <Select
+                    value={selectedPageId ?? undefined}
+                    onValueChange={(value) => {
+                      setSelectedPageId(value)
+                      setError("")
+                      setUsageError("")
+                    }}
+                  >
+                    <SelectTrigger
+                      id="high-ticket-page"
+                      aria-label="Choose a page"
+                      className="h-14 border-primary/30 bg-background text-base font-semibold"
+                    >
+                      <SelectValue placeholder="Select one of your pages…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {pages.map((item) => {
+                        const articleCount = item.kit?.articles.length ?? 0
+                        return (
+                          <SelectItem key={item.id} value={item.id} textValue={item.title}>
+                            <span className="flex min-w-0 items-center gap-3">
+                              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-lg">
+                                {item.nicheIcon || <LayoutTemplate className="h-4 w-4 text-primary" aria-hidden />}
+                              </span>
+                              <span className="min-w-0 flex-1">
+                                <span className="block truncate text-sm font-bold text-foreground">{item.title}</span>
+                                <span className="block truncate text-xs font-semibold text-muted-foreground">
+                                  {item.nicheName || "General"}
+                                  {item.offerTitle ? ` · ${item.offerTitle}` : ""}
+                                  {` · ${articleCount} saved article${articleCount === 1 ? "" : "s"}`}
+                                  {item.status !== "active" ? ` · ${item.status}` : ""}
+                                </span>
+                              </span>
+                            </span>
+                          </SelectItem>
+                        )
+                      })}
+                    </SelectContent>
+                  </Select>
+
+                  {selectedPage ? (
+                    <div className="space-y-2 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3">
+                      {hasAffiliateLink ? (
+                        <p
+                          role="status"
+                          className="flex items-start gap-2 text-sm font-semibold text-accent"
+                        >
+                          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                          Page ready — article CTAs will open this page&apos;s affiliate link.
+                        </p>
+                      ) : (
+                        <p
+                          role="alert"
+                          className="flex items-start gap-2 text-sm font-semibold text-red-300"
+                        >
+                          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                          This page has no affiliate link, so CTAs can&apos;t be woven yet.
+                        </p>
+                      )}
+                      <div className="flex flex-col gap-2 rounded-lg border border-primary/20 bg-background/40 px-3 py-2.5 sm:flex-row sm:items-center">
+                        <span className="text-[11px] font-black uppercase tracking-wide text-muted-foreground">
+                          Affiliate link in every article
+                        </span>
+                        <span className="min-w-0 flex-1 break-all font-mono text-xs font-semibold text-foreground">
+                          {hasAffiliateLink ? affiliateLink : "No affiliate link on this page"}
+                        </span>
+                        {hasAffiliateLink ? (
+                          <Button
+                            asChild
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 shrink-0 px-2 text-accent hover:bg-primary/15"
+                          >
+                            <a href={affiliateLink} target="_blank" rel="noopener noreferrer">
+                              <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
+                              Open
+                            </a>
+                          </Button>
+                        ) : (
+                          <Button
+                            asChild
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 shrink-0 px-2 text-accent hover:bg-primary/15"
+                          >
+                            <Link href={`/pages/${selectedPage.id}`}>Open page</Link>
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Pick a page to unlock View, Copy, and Use this template.</p>
+                  )}
+                </>
               )}
             </div>
 
@@ -577,6 +759,19 @@ export function HighTicketPayoutsContent() {
                 {error}
               </p>
             ) : null}
+
+            {saveNotice && selectedPage ? (
+              <p
+                role="status"
+                className="flex flex-wrap items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm font-semibold text-accent"
+              >
+                <FolderOpen className="h-4 w-4 shrink-0" aria-hidden />
+                <span className="min-w-0 flex-1">{saveNotice}</span>
+                <Button asChild variant="ghost" size="sm" className="h-8 px-2 text-accent hover:bg-primary/15">
+                  <Link href={`/pages/${selectedPage.id}`}>Open page details</Link>
+                </Button>
+              </p>
+            ) : null}
           </CardContent>
         </Card>
 
@@ -587,7 +782,7 @@ export function HighTicketPayoutsContent() {
             <CardContent className="flex items-center gap-4">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
               <div>
-                <p className="text-lg font-bold text-foreground">Personalizing article with your affiliate link...</p>
+                <p className="text-lg font-bold text-foreground">Personalizing article with your page link...</p>
                 <p className="text-sm text-muted-foreground">This usually takes a few seconds.</p>
               </div>
             </CardContent>
@@ -616,6 +811,12 @@ export function HighTicketPayoutsContent() {
                       <Clock size={12} aria-hidden />
                       {readingMinutes(previewArticle.wordCount)} min read
                     </span>
+                    {savedCatalogIds.has(previewArticle.id) ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-black/15 px-2.5 py-0.5 text-xs font-bold">
+                        <FolderOpen size={12} aria-hidden />
+                        Saved
+                      </span>
+                    ) : null}
                   </div>
                 </div>
                 <button
@@ -658,7 +859,7 @@ export function HighTicketPayoutsContent() {
                 <Button
                   type="button"
                   variant={usedArticleIds.has(previewArticle.id) ? "default" : "outline"}
-                  disabled={!linkIsValid || togglingUsageId === previewArticle.id || usageLoading}
+                  disabled={!canPersonalize || togglingUsageId === previewArticle.id || usageLoading}
                   onClick={() => void toggleUsed(previewArticle.id)}
                 >
                   {togglingUsageId === previewArticle.id ? (
@@ -666,7 +867,7 @@ export function HighTicketPayoutsContent() {
                   ) : (
                     <BookmarkCheck size={16} />
                   )}
-                  {usedArticleIds.has(previewArticle.id) ? "Used" : "Mark as Used"}
+                  {usedArticleIds.has(previewArticle.id) ? "Template used" : "Use this template"}
                 </Button>
               </div>
               {usageError ? (
@@ -684,7 +885,7 @@ export function HighTicketPayoutsContent() {
               <p className="text-xs font-black uppercase tracking-[0.2em] text-primary">Library</p>
               <h2 className="mt-1 text-2xl font-black text-foreground">Authority articles</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Search, filter unused articles, then view or copy with your link inside.
+                Search, filter unused articles, then view or copy with your page link inside.
               </p>
             </div>
             <p className="rounded-full border border-border bg-card px-3 py-1.5 text-sm font-semibold text-foreground">
@@ -692,7 +893,7 @@ export function HighTicketPayoutsContent() {
             </p>
           </div>
 
-          {linkIsValid ? (
+          {hasPage ? (
             <div className="rounded-2xl border border-primary/25 bg-primary/10 px-4 py-3">
               <div className="flex items-center justify-between gap-3 text-sm font-semibold text-foreground">
                 <span>Published for this link</span>
@@ -753,8 +954,8 @@ export function HighTicketPayoutsContent() {
               <Search className="mx-auto h-8 w-8 text-primary" aria-hidden />
               <p className="mt-3 text-base font-bold text-foreground">No articles match</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                {usageFilter !== "all" && !linkIsValid
-                  ? "Paste a valid https:// link first so used articles can be tracked."
+                {usageFilter !== "all" && !hasPage
+                  ? "Pick a page first so used articles can be tracked."
                   : "Try another niche, clear the search, or switch back to All."}
               </p>
               <Button
@@ -774,6 +975,7 @@ export function HighTicketPayoutsContent() {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {paged.map((article) => {
               const isUsed = usedArticleIds.has(article.id)
+              const isSaved = savedCatalogIds.has(article.id)
               return (
               <article
                 key={article.id}
@@ -800,6 +1002,12 @@ export function HighTicketPayoutsContent() {
                         Used
                       </span>
                     ) : null}
+                    {isSaved ? (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-primary">
+                        <FolderOpen className="h-3 w-3" aria-hidden />
+                        Saved
+                      </span>
+                    ) : null}
                   </div>
                   <h3 className="mt-3 line-clamp-2 text-base font-bold leading-snug text-foreground">{article.title}</h3>
                   <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
@@ -815,7 +1023,7 @@ export function HighTicketPayoutsContent() {
                     type="button"
                     variant="outline"
                     size="sm"
-                    disabled={loadingAction?.articleId === article.id || !linkIsValid}
+                    disabled={loadingAction?.articleId === article.id || !canPersonalize}
                     onClick={() => void openPreview(article.id)}
                     className="flex-1"
                   >
@@ -829,7 +1037,7 @@ export function HighTicketPayoutsContent() {
                   <Button
                     type="button"
                     size="sm"
-                    disabled={loadingAction?.articleId === article.id || !linkIsValid}
+                    disabled={loadingAction?.articleId === article.id || !canPersonalize}
                     onClick={() => void copyArticleFromCard(article.id)}
                     className="flex-1"
                   >
@@ -847,7 +1055,7 @@ export function HighTicketPayoutsContent() {
                   type="button"
                   variant={isUsed ? "default" : "outline"}
                   size="sm"
-                  disabled={!linkIsValid || togglingUsageId === article.id || usageLoading}
+                  disabled={!canPersonalize || togglingUsageId === article.id || usageLoading}
                   onClick={() => void toggleUsed(article.id)}
                   className="mt-2 w-full"
                 >
@@ -856,7 +1064,7 @@ export function HighTicketPayoutsContent() {
                   ) : (
                     <BookmarkCheck size={14} />
                   )}
-                  {isUsed ? "Used" : "Mark as used"}
+                  {isUsed ? "Template used" : "Use this template"}
                 </Button>
               </article>
               )

@@ -24,7 +24,7 @@ export function MarkAsUsedButton({
       disabled={used || marking || disabled}
       onClick={onClick}
       className={cn(
-        "h-10 flex-1 text-sm",
+        "h-10 w-full text-sm",
         used
           ? "border-green-500/40 bg-green-500/15 font-medium text-green-400"
           : "rounded-xl border-border bg-card font-medium text-foreground hover:border-primary hover:bg-primary/10",

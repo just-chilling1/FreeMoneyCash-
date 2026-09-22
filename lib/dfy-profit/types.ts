@@ -1,22 +1,17 @@
-export interface DfyVideoResult {
-  videoId: string
+export interface DfyProfitPageResult {
+  pageId: string
+  slug: string | null
+  url: string
   title: string
-  channelTitle: string
-  thumbnailUrl: string
-  viewCount: number
-  videoUrl: string
-  comments: string[]
-  usedFallbackComments: boolean
+  productName: string
+  productContext: string
+  niche: string
 }
 
 export interface DfyArticleResult {
-  id: string | null
-  slug: string | null
-  url: string | null
   title: string
   excerpt: string
   html: string
-  saveWarning?: string
 }
 
 export interface DfyFacebookPost {

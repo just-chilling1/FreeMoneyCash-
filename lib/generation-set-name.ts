@@ -12,7 +12,3 @@ export function defaultLabelFromUrl(url: string): string {
 export function postUsedKey(postId: string) {
   return `post:${postId}`
 }
-
-export function commentUsedKey(videoId: string, index: number) {
-  return `comment:${videoId}:${index}`
-}

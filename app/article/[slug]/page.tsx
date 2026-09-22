@@ -45,11 +45,20 @@ const heroTitles: Record<string, string> = {
   "Fitness & Sports": "The Ultimate Fitness & Performance Breakthrough",
   "Make Money Online": "How to Build Real Online Income",
   "Health & Fitness": "Transform Your Health Starting Today",
+  "Health & Wellness": "Transform Your Health & Wellness Starting Today",
+  "Finance & Investing": "Smarter Money & Investing Decisions",
+  "Digital Marketing": "Grow Traffic, Leads & Sales Faster",
+  "Self-Help & Personal Development": "Unlock Your Full Potential",
+  "Education & Learning": "Master New Skills That Matter",
+  "Business & Entrepreneurship": "Build & Scale With Confidence",
+  "Travel & Lifestyle": "Travel Better & Live Well",
   "Tech & Gadgets": "The Latest Tech That Changes Everything",
   "Beauty & Skincare": "The Beauty Secrets That Actually Work",
   Relationships: "Build the Relationship You Deserve",
+  "Dating & Relationships": "Build the Relationship You Deserve",
   Pets: "Everything Your Pet Needs to Thrive",
   "Home & Garden": "Transform Your Home Into Paradise",
+  "Technology & Gadgets": "The Latest Tech That Changes Everything",
 }
 
 function getNicheTitle(page: { niches?: { name?: string } | null; title?: string | null }) {

@@ -23,9 +23,11 @@ interface PageActionsProps {
   pageTitle: string
   status: string
   affiliateLink: string
+  /** When set, navigate here after a successful delete instead of refreshing the current route. */
+  afterDeleteHref?: string
 }
 
-export function PageActions({ pageId, pageTitle, status, affiliateLink }: PageActionsProps) {
+export function PageActions({ pageId, pageTitle, status, affiliateLink, afterDeleteHref }: PageActionsProps) {
   const [loading, setLoading] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [renameOpen, setRenameOpen] = useState(false)
@@ -85,6 +87,11 @@ export function PageActions({ pageId, pageTitle, status, affiliateLink }: PageAc
     await supabase.from("pages").delete().eq("id", pageId)
 
     setDeleteOpen(false)
+    if (afterDeleteHref) {
+      router.push(afterDeleteHref)
+      router.refresh()
+      return
+    }
     router.refresh()
     setLoading(false)
   }

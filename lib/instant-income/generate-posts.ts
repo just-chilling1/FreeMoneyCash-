@@ -21,24 +21,46 @@ function validatePosts(raw: unknown, postCount: number, promoLink: string): stri
 }
 
 export async function generateInstantIncomePosts(input: {
+  /** Affiliate destination — read for product name / blurb. */
   affiliateUrl: string
+  /** Link written into each post. Defaults to `affiliateUrl`; DFY flows pass the hosted profit page URL. */
+  promoLink?: string
   niche: string
   offerName?: string
+  /** Already-known product blurb (e.g. from a saved page kit). Used when scraping yields nothing. */
+  productContext?: string
+  /** Title of the hosted page the link opens, so posts can reference it naturally. */
+  pageTitle?: string
   postCount?: number
+  /** Prefix for generated post ids. Defaults to `ii-post`. */
+  idPrefix?: string
 }): Promise<{
   posts: GeneratedInstantIncomePost[]
   productName: string
+  productContext: string
   usedFallback: boolean
 }> {
   const postCount = input.postCount ?? INSTANT_INCOME_POST_COUNT
-  const scraped = await scrapeOfferContext(input.affiliateUrl)
+  const promoLink = input.promoLink?.trim() || input.affiliateUrl
+  const idPrefix = input.idPrefix?.trim() || "ii-post"
+
+  const scraped = input.affiliateUrl
+    ? await scrapeOfferContext(input.affiliateUrl)
+    : { productName: "", productContext: "" }
   const productName = pickProductName(input.offerName, scraped.productName)
   const offerLabel = resolveOfferLabel(productName, input.niche)
   const productContextParts = [
-    scraped.productContext.trim() || `${offerLabel} — a ${input.niche} offer the reader can start from the link`,
+    scraped.productContext.trim() ||
+      input.productContext?.trim() ||
+      `${offerLabel} — a ${input.niche} offer the reader can start from the link`,
   ]
   if (input.offerName?.trim() && input.offerName.trim() !== productName) {
     productContextParts.push(`The member saved this offer as “${input.offerName.trim()}”.`)
+  }
+  if (input.pageTitle?.trim()) {
+    productContextParts.push(
+      `The link opens the member's own guide page titled “${input.pageTitle.trim()}”, which recommends this offer.`,
+    )
   }
   const productContext = productContextParts.join(" ")
 
@@ -49,7 +71,7 @@ export async function generateInstantIncomePosts(input: {
     bodies = buildInstantIncomeFallbackPosts({
       niche: input.niche,
       productName,
-      promoLink: input.affiliateUrl,
+      promoLink,
       count: postCount,
     })
     usedFallback = true
@@ -60,10 +82,10 @@ export async function generateInstantIncomePosts(input: {
           productName: offerLabel,
           productContext,
           niche: input.niche,
-          promoLink: input.affiliateUrl,
+          promoLink,
           postCount,
         }),
-        validate: (raw) => validatePosts(raw, postCount, input.affiliateUrl),
+        validate: (raw) => validatePosts(raw, postCount, promoLink),
         options: { maxRetries: 2, timeoutMs: 50_000 },
       })
     } catch (error) {
@@ -71,7 +93,7 @@ export async function generateInstantIncomePosts(input: {
       bodies = buildInstantIncomeFallbackPosts({
         niche: input.niche,
         productName,
-        promoLink: input.affiliateUrl,
+        promoLink,
         count: postCount,
       })
       usedFallback = true
@@ -80,9 +102,10 @@ export async function generateInstantIncomePosts(input: {
 
   return {
     productName,
+    productContext,
     usedFallback,
     posts: bodies.map((body, index) => ({
-      id: `ii-post-${index + 1}`,
+      id: `${idPrefix}-${index + 1}`,
       body,
     })),
   }
