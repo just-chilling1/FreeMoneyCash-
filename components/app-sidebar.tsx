@@ -20,8 +20,10 @@ import {
   Package,
   ShieldCheck,
 } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { BrandLogo } from '@/components/brand-logo'
 import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
@@ -84,18 +86,12 @@ export function AppSidebar() {
     <div className="flex h-full flex-col">
       <div className={`border-b border-white/5 ${collapsed ? 'px-3 py-5' : 'p-6'}`}>
         <div className={`flex items-center ${collapsed ? 'flex-col gap-3' : 'gap-3'}`}>
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent shadow-[0_0_24px_rgba(207,161,59,0.4)]">
-            <span className="text-lg font-black italic text-primary-foreground">F</span>
-          </div>
-          {!collapsed && (
-            <Link href="/dashboard" className="min-w-0 flex-1 hover:opacity-90">
-              <h1 className="whitespace-nowrap text-lg font-black italic uppercase tracking-tighter text-white">
-                FREE&nbsp;MONEY
-              </h1>
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/50">
-                CASH
-              </p>
+          {collapsed ? (
+            <Link href="/dashboard" className="shrink-0 hover:opacity-90" aria-label="Free Money Cash dashboard">
+              <Image src="/icon.png" alt="Free Money Cash" width={231} height={400} className="h-14 w-auto object-contain" priority />
             </Link>
+          ) : (
+            <BrandLogo size="md" className="flex-1" />
           )}
           <button
             type="button"
@@ -228,12 +224,7 @@ export function AppSidebar() {
         className="fixed top-0 right-0 left-0 z-40 flex h-14 items-center gap-3 border-b border-white/5 bg-background/90 px-4 backdrop-blur lg:hidden"
         style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent">
-          <span className="text-sm font-black italic text-primary-foreground">F</span>
-        </div>
-        <span className="whitespace-nowrap text-sm font-black italic uppercase tracking-tighter text-white">
-          Free&nbsp;Money&nbsp;Cash
-        </span>
+        <BrandLogo size="sm" />
       </div>
 
       <aside

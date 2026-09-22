@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -52,9 +53,7 @@ export default function SignUpPage() {
         <Card className="glass-strong glow-purple">
           <CardHeader className="space-y-2">
             <div className="mb-4 flex items-center justify-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-accent shadow-[0_0_40px_rgba(207,161,59,0.4)]">
-                <span className="text-3xl font-black italic text-primary-foreground">F</span>
-              </div>
+              <Image src="/logo.png" alt="Free Money Cash" width={552} height={306} className="h-28 w-auto object-contain" priority />
             </div>
             <CardTitle className="text-center text-3xl font-bold text-primary">Join Free Money Cash</CardTitle>
             <CardDescription className="text-lg text-muted-foreground text-center">

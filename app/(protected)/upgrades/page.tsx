@@ -13,8 +13,7 @@ const upgrades = [
     icon: Package,
     color: "gold",
     features: [
-      "5 YouTube Shorts to comment on",
-      "Ready-to-copy comments for each video",
+      "Hosted profit page built from your link",
       "Hosted authority article with your link",
       "3 Facebook posts promoting the article",
       "Save, restore, and mark items as used",
