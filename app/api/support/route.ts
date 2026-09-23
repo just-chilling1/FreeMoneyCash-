@@ -136,7 +136,9 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json().catch(() => ({}))
-    const email = user.email?.trim() || ""
+    const bodyEmail = typeof body.email === "string" ? body.email.trim() : ""
+    const accountEmail = user.email?.trim() || ""
+    const email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bodyEmail) ? bodyEmail : accountEmail
     const message = typeof body.message === "string" ? body.message.trim() : ""
     const subject = sanitizeSubject(body.subject)
 

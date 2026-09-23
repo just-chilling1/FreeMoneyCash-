@@ -120,7 +120,7 @@ export const faqSections: FaqSection[] = [
     items: [
       {
         q: "How do I contact support?",
-        a: `Use the Need help? button anywhere in the app, or email ${SUPPORT_EMAIL}. We typically reply within about 2 hours — allow up to 24–48 hours on busy days.`,
+        a: `Use the contact form on the right side of your dashboard, the Need Help banner at the bottom of any page, or email ${SUPPORT_EMAIL}. We typically reply within about 2 hours — allow up to 24–48 hours on busy days.`,
       },
       {
         q: "How quickly does support respond?",

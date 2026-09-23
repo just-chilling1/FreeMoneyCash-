@@ -3,7 +3,7 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { EarningsBanner } from "@/components/earnings-banner"
 import { AnimatedBackground } from "@/components/animated-background"
 import { BottomNav } from "@/components/bottom-nav"
-import { ContactSupportWidget } from "@/components/dashboard/contact-support-widget"
+import { SupportPageBanner } from "@/components/support-page-banner"
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -14,10 +14,10 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
         <div className="min-h-dvh bg-transparent p-4 pt-[calc(env(safe-area-inset-top)+3.5rem)] pb-24 lg:p-8 lg:pt-8 lg:pb-8">
           <EarningsBanner />
           {children}
+          <SupportPageBanner />
         </div>
       </main>
       <BottomNav />
-      <ContactSupportWidget />
     </div>
   )
 }
